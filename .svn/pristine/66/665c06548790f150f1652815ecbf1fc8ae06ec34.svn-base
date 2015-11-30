@@ -1,0 +1,36 @@
+package com.zhuika.service;
+
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.watch.ejb.FriendRelation;
+import com.watch.ejb.UserWatch;
+import com.zhuika.entity.User;
+import com.zhuika.factory.DAOException;
+
+public interface UserService {
+	//用户登录
+	User login(String userName);
+	//User loginPhone(String phone);
+	//用户注册
+	String register(User user) throws DAOException;
+	//获取用户
+	String reg(UserWatch user) throws DAOException;
+	User getUser(String serialNumber);
+	void updateUser(User user);
+	List<UserWatch> GetAll(int offset, int length,HashMap<String, String> map);
+	UserWatch Find(String fid);
+	void Update(UserWatch user);
+	
+	//好友信息
+    public void Add(FriendRelation friendRelationInfo) ;	
+	public void Update(FriendRelation friendRelationInfo) ;	
+	public void Delete(String id) ;	
+	public FriendRelation find(String id) ;	
+	public int GetCount(HashMap<String, String> map);	
+	public List<FriendRelation> ListFriendRelation(int offset, int length,HashMap<String, String> map);
+	
+	public void SendFriendToWatch(FriendRelation friendRelationInfo);
+	public void SendToSerialNumber(String fromsnid,String tosnid,int calltype);
+}

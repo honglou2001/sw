@@ -1,0 +1,35 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>Untitled</title>
+	</head>
+
+	<body>
+		<form action="/sw/user/doUpload" method="post"
+			enctype="multipart/form-data">
+			<input type="file" size="30" name="usrimg"/>&nbsp;&nbsp;<input type="text" name="name0" value="第一个文件" /><br />
+			<input type="file" size="30" name="test1" />&nbsp;&nbsp;<input type="text" name="name1" value="第二个文件" /><br />
+			<input type="file" size="30" name="test2" />&nbsp;&nbsp;<input type="text" name="name2" value="第三个文件" /><br />
+			<input type="text" value="a59b66a6-17a5-4bb4-8b24-62f7f01a5d78" name="usrid"/>
+			<input name="up" type="submit" value="上传" />
+		</form>
+		
+		
+		<form action="/sw/sport/sportAdd" method="post">
+			<input type="text" name="usrid" value="a59b66a6-17a5-4bb4-8b24-62f7f01a5d78" /><br />
+			<input type="text" name="serialnumid" value="d3ac7e7a-2e15-44d1-b62d-24c0d0a72e30" /><br />
+			<input type="text" name="fsportdate" value="1511081129" /><br />
+			<input type="text" name="fstep" value="120" /><br />
+			<input type="text" name="fdistance" value="800" /><br />
+			<input type="text" name="fcal" value="50" /><br />
+			<input type="text" name="fheartrate" value="60" /><br />
+			<input type="text" name="fheartstr" value="AAAAAAABBBBBBBB" /><br />
+			<input type="text" name="fdatatousrid" value="a59b66a6-17a5-4bb4-8b24-62f7f01a5d78" /><br />
+			<input type="text" name="fremark" value="fremarkfremark" /><br />
+			<input name="up" type="submit" value="postSportData" />
+		</form>
+		
+	</body>
+</html>

@@ -1,0 +1,445 @@
+package com.zhuika.service.impl;
+
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.watch.ejb.FriendContact;
+import com.watch.ejb.FriendRelation;
+import com.watch.ejb.LocElectfence;
+import com.watch.ejb.Serialnumber;
+import com.watch.ejb.UserAlarm;
+import com.watch.ejb.UserSnrelate;
+import com.watch.ejb.UserSnrelateService;
+import com.watch.ejb.UserWatch;
+import com.zhuika.dao.IBindPhoneDao;
+import com.zhuika.dao.IFriendContactDao;
+import com.zhuika.dao.IInfoDao;
+import com.zhuika.dao.ISerialNumberDao;
+import com.zhuika.dao.IUserDao;
+import com.zhuika.dao.impl.LocElectfenceDaoIml;
+import com.zhuika.dao.impl.UserDaoImpl;
+import com.zhuika.dao.impl.UserSnrelateDaoIml;
+import com.zhuika.discard.DiscardClient;
+import com.zhuika.entity.BindPhone;
+import com.zhuika.entity.Info;
+import com.zhuika.entity.SerialNumber;
+import com.zhuika.entity.User;
+import com.zhuika.factory.DAOException;
+import com.zhuika.service.UserService;
+import com.zhuika.util.ByteConverter;
+import com.zhuika.util.Hex;
+import com.zhuika.util.ejbproxy;
+
+@Service("userService")
+public class UserServiceImpl implements UserService {
+	@Resource   
+    private IUserDao userDao;
+	@Resource   
+    private ISerialNumberDao serialNumberDao;
+	@Resource
+	private IInfoDao infoDao;
+	@Autowired
+    private IBindPhoneDao bindPhoneDao;
+    @Resource
+   	private IFriendContactDao friendContactDao;
+    
+	public User login(String phone) {
+		
+		return userDao.findByPhone(phone);
+	}
+	
+	public void AddToRelated(String serialnumid,String userid)
+	{
+		UserSnrelateDaoIml  usrrelatedao = new UserSnrelateDaoIml();
+		UserSnrelate usrrelate = new UserSnrelate();
+		
+//		usrrelate.setFuserid(user.getId());
+//		usrrelate.setFsnid(serialNumber.getId());
+		
+		usrrelate.setFsnidstr(serialnumid);
+		usrrelate.setFuseridstr(userid);
+		
+		//1 表示为注册关联的序列号
+		usrrelate.setFdatastatus(1);
+		
+		usrrelatedao.Add(usrrelate);
+		
+	}
+	public String register(User user) throws DAOException  {
+		SerialNumber serialNumber=serialNumberDao.findBySerialNumber(user.getSerialNumber());
+		
+		System.out.println(serialNumber==null);
+		if(serialNumber==null){		
+			System.out.println("序列号没有激活");
+			return "序列号没有激活";
+		}else if(userDao.findBySerialNumber(user.getSerialNumber())!=null){			
+			System.out.println("该序列号已经被注册了");
+			return "该序列号已经被注册了";
+		}else if(userDao.findByName(user.getUserName())!=null){
+			return "用户名已经被注册了";
+		}else if(userDao.findByPhone(user.getPhone())!=null){
+			return "手机号已经被注册了";
+		}
+		else {
+			userDao.save(user);
+			serialNumber.setIsReg("1");
+			serialNumberDao.updateSerialNumber(serialNumber);
+			
+			//AddToRelated(serialNumber,user);
+			
+			BindPhone bp=bindPhoneDao.findBySeriaNumber(user.getSerialNumber());
+			if(bp==null){
+				BindPhone bp1=new BindPhone();
+				bp1.setSerialNumber(user.getSerialNumber());
+				bp1.setMasterNo("sos_num1="+user.getPhone());
+				bp1.setSos("sos_num2=,sos_num3=,sos_num4=");
+				bp1.setListenNo("listen_num=");
+				bp1.setStatus("1");
+				bindPhoneDao.addPhone(bp1);
+			}else{
+				bp.setSerialNumber(user.getSerialNumber());
+				bp.setMasterNo("sos_num1="+user.getPhone());
+				bp.setSos("sos_num2=,sos_num3=,sos_num4=");
+				bp.setListenNo("listen_num=");
+				bp.setStatus("1");
+				bindPhoneDao.updatePhone(bp);
+			}				
+			return "success";
+		}
+	}
+	public String reg(UserWatch user) throws DAOException
+	{
+		SerialNumber serialNumber=serialNumberDao.findBySerialNumber(user.getSerialnumber());
+		
+		System.out.println(serialNumber==null);
+		if(serialNumber==null){		
+			System.out.println("序列号没有激活");
+			return "序列号没有激活";
+		}else if(userDao.findBySerialNumber(user.getSerialnumber())!=null){			
+			System.out.println("该序列号已经被注册了");
+			return "该序列号已经被注册了";
+		}else if(userDao.findByName(user.getUsername())!=null){
+			//用户已经存在了
+			System.out.println("用户名已经被注册了");
+			return "用户名已经被注册了";
+		}else if(userDao.findByPhone(user.getFmobile())!=null){
+			return "手机号已经被注册了";
+		}else {
+			//userDao.save(user);
+			//ejb save
+						
+			userDao.Add(user);
+			
+			serialNumber.setIsReg("1");
+			serialNumberDao.updateSerialNumber(serialNumber);
+			
+			AddToRelated(serialNumber.getFuniqueid(),user.getFuniqueid());
+			
+			BindPhone bp=bindPhoneDao.findBySeriaNumber(user.getSerialnumber());
+			if(bp==null){
+				BindPhone bp1=new BindPhone();
+				bp1.setSerialNumber(user.getSerialnumber());
+				bp1.setMasterNo("sos_num1="+user.getPhone());
+				bp1.setSos("sos_num2=,sos_num3=,sos_num4=");
+				bp1.setListenNo("listen_num=");
+				bp1.setStatus("1");
+				bindPhoneDao.addPhone(bp1);
+			}else{
+				bp.setSerialNumber(user.getSerialnumber());
+				bp.setMasterNo("sos_num1="+user.getPhone());
+				bp.setSos("sos_num2=,sos_num3=,sos_num4=");
+				bp.setListenNo("listen_num=");
+				bp.setStatus("1");
+				bindPhoneDao.updatePhone(bp);
+			}				
+			return "success";
+		}
+
+	}
+	
+	//添加电话号码格式：@@<L><ID><0x7103><号码><checksum>\r\n   号码跟发9990中号码格式一样，acsill字符形式
+	public void SendFriendToWatch(FriendRelation friendRelationInfo)
+	{
+		
+		int calltype= 1;
+				
+		if(friendRelationInfo.getFdatastatus()!=null)
+		{
+			calltype = friendRelationInfo.getFdatastatus();
+		}
+		
+		SendToSerialNumber(friendRelationInfo.getFuseridstr(),friendRelationInfo.getFfriendid(),calltype);
+		
+		//把朋友的发给自己
+		//sendNumberToUser(friendRelationInfo);
+		
+		//把自己的发给朋友
+		//sendNumberToFriend(friendRelationInfo);
+		
+	}
+	
+	public void SendToSerialNumber(String fromsnid,String tosnid,int calltype)
+	{
+		Serialnumber serialNumFrom = this.serialNumberDao.Find(fromsnid);	
+		Serialnumber serialNumTo = this.serialNumberDao.Find(tosnid);
+		
+		FriendContact contactInfo = new FriendContact();
+		contactInfo.setFdatastatus(calltype);
+		
+		//相互发送给对方手表
+		saveToContact(contactInfo,serialNumFrom,serialNumTo);		
+		sendNumberToSerial(contactInfo,serialNumFrom,serialNumTo);
+					
+		saveToContact(contactInfo,serialNumTo,serialNumFrom);				
+		sendNumberToSerial(contactInfo,serialNumTo,serialNumFrom);
+		
+	}
+	
+//	private void sendNumberToUser(Serialnumber serialNumFrom,Serialnumber serialNumTo)
+//	{
+////		HashMap<String, String> map = new HashMap<String, String>();
+////		map.put("funiqueid", friendRelationInfo.getFuseridstr());
+//		//查询发起请求人的信息
+//		
+//		//Serialnumber serialNum = this.serialNumberDao.Find(friendRelationInfo.getFuseridstr());		
+//		//List<UserWatch> listUsers = this.GetAll(0, 1, map);
+//		
+//		sendNumberToSerial(serialNum);
+//	}
+//	
+//	private void sendNumberToFriend(FriendRelation friendRelationInfo)
+//	{
+////		HashMap<String, String> map = new HashMap<String, String>();
+////		map.put("funiqueid", friendRelationInfo.getFfriendid());
+//		//查询发起请求人的信息
+//		//List<UserWatch> listUsers = this.GetAll(0, 1, map);
+//		
+//		Serialnumber serialNum = this.serialNumberDao.Find(friendRelationInfo.getFfriendid());
+//		
+//		sendNumberToSerial(serialNum);
+//	}
+//	
+
+	
+	//Serialnumber：目标手表
+	private void saveToContact(FriendContact contactInfo,Serialnumber serialNumFrom,Serialnumber serialNumTo)
+	{
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("FToSnID", serialNumTo.getFuniqueid());	
+		
+		List<FriendContact> listContact = friendContactDao.ListFriendContact(0, 100, map);
+		
+		int index = 0;
+		if(listContact!=null&&listContact.size()>0)
+		{
+			FriendContact contactItem = listContact.get(0);
+			index = contactItem.getFindex();
+			index++;
+		}
+		
+		FriendContact friendContactInfo = new FriendContact();
+		friendContactInfo.setFaction(0);
+		friendContactInfo.setFindex(index);
+		friendContactInfo.setFname(serialNumFrom.getNickname());
+		friendContactInfo.setFphonenum(serialNumFrom.getFphonenum());
+		friendContactInfo.setFproperties(0);
+		//直拨还是回拨
+		friendContactInfo.setFdialtype(contactInfo.getFdatastatus());
+		
+		friendContactInfo.setFfromsnid(serialNumFrom.getFuniqueid());
+		friendContactInfo.setFtosnid(serialNumTo.getFuniqueid());
+				
+		friendContactDao.AddFriendContact(friendContactInfo);
+
+		contactInfo.setFindex(index);
+	}
+	
+	private void sendNumberToSerial(FriendContact contactInfo,Serialnumber serialNumFrom,Serialnumber serialNumTo)
+	{							
+			int index = contactInfo.getFindex();
+			String fname = serialNumTo.getNickname();		
+			byte[] encodeByte = null;
+			
+			
+			
+			try {
+				encodeByte = fname.getBytes("utf8");
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+									
+			//String contacts = String.format("%s,%s,_,%,%s,%s", "0",index,serialNumFrom.getFphonenum(),"0","1");		
+			int calltype = contactInfo.getFdatastatus();
+			
+			String contacts = "0,"+index+",_,"+serialNumFrom.getFphonenum()+","+"0,"+calltype;
+			String param = contacts+";"+fname;
+			
+			fname = Hex.encodeHexStr(encodeByte);	
+			String dataHexStr=Hex.encodeHexStr((contacts).getBytes());	
+			//把_替换为名字
+			dataHexStr = dataHexStr.replace("5f", fname);
+						
+			//1,0,_,1391301930123,0,1
+			String toSerialNumber = serialNumTo.getSerialnumber();
+			String info = ByteConverter.GetSendData(toSerialNumber,"7103",dataHexStr,true);	
+			
+			ejbproxy.saveToMq(serialNumTo.getSerialnumber(), "7103", info, "", "加好友下发通讯录",param);
+			
+			ByteConverter.sendToServerAscii(infoDao,toSerialNumber,info);
+			
+//			byte[] toSend = null;
+//			try {
+//				byte[] cmd = { 0x71,0x03 };
+//				byte[] bytes = serialNumFrom.getFphonenum().getBytes();
+//				toSend = ByteConverter.GetSendData(bytes,SerialNumber,cmd);
+//				
+//				info = ByteConverter.GetSendData(SerialNumber,"7103",serialNumFrom.getFphonenum(),false);			
+//			} catch (UnsupportedEncodingException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}		
+			
+			//获取要发送到哪个客户端			
+			
+			
+//			if(!info.equals("")){
+//				Info i=infoDao.findBySerialNumber(toSerialNumber);	
+//				if(i!=null){
+//					String[] args={i.getIp(),String.valueOf(i.getPort()),info};
+//					try {
+//						DiscardClient.getClient(args);
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();					
+//					}
+//				}
+//				else
+//				{
+//					throw new RuntimeException(String.format("服务器无手表%s的相关信息", toSerialNumber));
+//				}
+//			}
+	
+	}
+	private void sendNumberToSerial(List<UserWatch> listUsers)
+	{
+		for(int index=0;index<listUsers.size();index++){
+			
+			UserWatch user = listUsers.get(index);
+			String SerialNumber = user.getSerialnumber();
+			String phoneNum =user.getFmobile();
+			byte[] toSend = null;
+			try {
+				byte[] cmd = { 0x71,0x03 };
+				byte[] bytes = phoneNum.getBytes();
+				toSend = ByteConverter.GetSendData(bytes,SerialNumber,cmd);
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}		
+			
+			//获取要发送到哪个客户端			
+			Info i=infoDao.findBySerialNumber(SerialNumber);	
+			
+			if(i!=null){
+				String[] args={i.getIp(),String.valueOf(i.getPort()),"info"};
+				try {
+					DiscardClient.getClient(args,toSend);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					
+				}
+			}
+			else
+			{
+				throw new RuntimeException(String.format("服务器无手表%s的相关信息", SerialNumber));
+			}
+		}
+	}
+	
+//	@Override
+//	public User loginPhone(String phone)
+//	{
+//		return userDao.findByPhone(phone);
+//	}
+	@Override
+	public User getUser(String serialNumber) {	
+		return userDao.findBySerialNumber(serialNumber);
+	}
+	@Override
+	public void updateUser(User user) {
+		userDao.update(user);
+	}
+	
+	@Override
+	public List<UserWatch> GetAll(int offset, int length,HashMap<String, String> map)
+	{
+		return userDao.GetAll(offset, length, map);
+	}
+	
+	@Override
+	public UserWatch Find(String fid)
+	{
+		if(fid == null || fid.length() == 0)
+		{
+			return null;
+		}
+		return userDao.Find(fid);
+	}
+	@Override
+	public void Update(UserWatch user)
+	{
+		userDao.Update(user);
+	}
+
+	@Override
+	public void Add(FriendRelation friendRelationInfo) {
+		// TODO Auto-generated method stub
+		userDao.Add(friendRelationInfo);
+	}
+
+	@Override
+	public void Update(FriendRelation friendRelationInfo) {
+		// TODO Auto-generated method stub
+		userDao.Update(friendRelationInfo);
+	}
+
+	@Override
+	public void Delete(String id) {
+		// TODO Auto-generated method stub
+		userDao.Delete(id);
+		
+	}
+
+	@Override
+	public FriendRelation find(String id) {
+		// TODO Auto-generated method stub
+		return userDao.find(id);
+	}
+
+	@Override
+	public int GetCount(HashMap<String, String> map) {
+		// TODO Auto-generated method stub
+		return userDao.GetCount(map);
+	}
+
+	@Override
+	public List<FriendRelation> ListFriendRelation(int offset, int length,
+			HashMap<String, String> map) {
+		// TODO Auto-generated method stub
+		return userDao.ListFriendRelation(offset, length, map);
+	}
+	
+}

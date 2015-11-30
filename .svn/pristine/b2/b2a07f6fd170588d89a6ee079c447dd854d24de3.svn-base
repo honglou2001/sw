@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.1.7//EN"
+    "http://struts.apache.org/dtds/struts-2.1.7.dtd">
+<struts>
+    
+	<!-- 用户模块 -->
+	<package name="user" namespace="/user" extends="struts-default">
+		<action name="userLogin" class="com.zhuika.action.UserAction" method="userLogin"></action>
+		<action name="userRegister" class="com.zhuika.action.UserAction" method="userRegister"></action>
+		<action name="retrievePassword" class="com.zhuika.action.UserAction" method="retrievePassword"></action>
+		<action name="updatePassword" class="com.zhuika.action.UserAction" method="updatePassword"></action>
+		<action name="getUser" class="com.zhuika.action.UserAction" method="getUser"></action>
+		<action name="userUpdate" class="com.zhuika.action.UserAction" method="userUpdate"></action>	
+		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>											
+	</package>
+	
+	<!-- 手环序列号模块 -->
+	<package name="serialnum" namespace="/serialnum" extends="struts-default">
+		<action name="serialNumAdd" class="com.zhuika.action.SerialNumAction" method="serialNumAdd"></action>
+		<action name="serialNumUpdate" class="com.zhuika.action.SerialNumAction" method="serialNumUpdate"></action>	
+		<action name="getSerialNum" class="com.zhuika.action.SerialNumAction" method="getSerialNum"></action>	
+		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>	
+		<action name="numUsrRelation" class="com.zhuika.action.SerialNumAction" method="numUsrRelation"></action>	
+		<action name="serialNumAction" class="com.zhuika.action.SerialNumAction" method="serialNumAction"></action>			
+		<action name="searchSerialNumber" class="com.zhuika.action.SerialNumAction" method="searchSerialNumber"></action>
+		<action name="searchSerialParm" class="com.zhuika.action.SerialNumAction" method="searchSerialParm"></action>	
+		<action name="setPhoneNumber" class="com.zhuika.action.SerialNumAction" method="setPhoneNumber"></action>			
+		<action name="addPacketAction" class="com.zhuika.action.SerialNumAction" method="addPacketAction"></action>	
+		<action name="getPacketAction" class="com.zhuika.action.SerialNumAction" method="getPacketAction"></action>							
+		<action name="rechargeAction" class="com.zhuika.action.SerialNumAction" method="rechargeAction"></action>		
+		<action name="queryFee" class="com.zhuika.action.SerialNumAction" method="queryFee"></action>
+		<action name="queryBalance" class="com.zhuika.action.SerialNumAction" method="queryBalance"></action>			
+		<action name="queryDetach" class="com.zhuika.action.SerialNumAction" method="queryDetach"></action>			
+		<action name="queryMsgCenter" class="com.zhuika.action.LocEleAction" method="queryMsgCenter"></action>																															
+	</package>
+			
+	<!-- 电子围栏模块 -->
+	<package name="electfence" namespace="/electfence" extends="struts-default">
+	    <action name="addElectFence" class="com.zhuika.action.ElectFenceAction" method="addElectFence"></action>
+		<action name="searchElectFence" class="com.zhuika.action.ElectFenceAction" method="findElectFence"></action>
+		<action name="deleteElectFence" class="com.zhuika.action.ElectFenceAction" method="deleteElectFence"></action>	
+	</package>
+	
+	<!-- 定位模块 -->
+	<package name="location" namespace="/location" extends="struts-default">
+		<action name="searchMovement" class="com.zhuika.action.LocationAction" method="searchMovement"></action>
+		<action name="searchLocation" class="com.zhuika.action.LocationAction" method="searchLocation"></action>
+		<action name="searchLoaPhone" class="com.zhuika.action.LocationAction" method="searchLoaPhone"></action>
+		<action name="searchStationGps" class="com.zhuika.action.LocationAction" method="searchStationGps"></action>					
+		<action name="queryLocEleChange" class="com.zhuika.action.LocEleAction" method="queryLocEleChange"></action>
+		<action name="searchLoaUsrid" class="com.zhuika.action.LocationAction" method="searchLoaUsrid"></action>	
+		<action name="searchAreaLog" class="com.zhuika.action.LocationAction" method="searchAreaLog"></action>							
+			
+	</package>
+	
+	<!-- 闹铃模块 -->
+	<package name="alarm" namespace="/alarm" extends="struts-default">
+		<action name="setAlarm" class="com.zhuika.action.AlarmAction" method="setAlarm"></action>
+		<action name="searchAlarm" class="com.zhuika.action.AlarmAction" method="searchAlarm"></action>
+		<action name="newAlarm" class="com.zhuika.action.AlarmAction" method="newAlarm"></action>
+		<action name="updateAlarm" class="com.zhuika.action.AlarmAction" method="updateAlarm"></action>	
+		<action name="ListAlarm" class="com.zhuika.action.AlarmAction" method="ListAlarm"></action>	
+		<action name="deleteAlarm" class="com.zhuika.action.AlarmAction" method="deleteAlarm"></action>							
+	</package>
+	
+	<!-- GPS模块 -->
+	<package name="gps" namespace="/gps" extends="struts-default">		
+		<action name="searchLbs" class="com.zhuika.action.GpsAction" method="searchLbs"></action>		
+		<action name="setLbs" class="com.zhuika.action.GpsAction" method="setLbs"></action>		
+	</package>
+			
+	<!-- 亲情号模块 -->
+	<package name="family" namespace="/family" extends="struts-default">
+		<action name="addFamilyNo" class="com.zhuika.action.FamilyNumberAction" method="addFamilyNo"></action>		
+		<action name="searchFamilyNo" class="com.zhuika.action.FamilyNumberAction" method="searchFamilyNo"></action>
+		<action name="callBackAPI" class="com.zhuika.action.FamilyNumberAction" method="callBackAPI"></action>
+		<action name="sendSMS" class="com.zhuika.action.FamilyNumberAction" method="sendSMS"></action>		
+	    <action name="callResultNotify" class="com.zhuika.action.FamilyNumberAction" method="callResultNotify"></action>	
+	    <action name="createClientNum" class="com.zhuika.action.FamilyNumberAction" method="createClientNum"></action>	
+		<action name="queryClientNum" class="com.zhuika.action.FamilyNumberAction" method="queryClientNum"></action>	
+		<action name="chargeClientNum" class="com.zhuika.action.FamilyNumberAction" method="chargeClientNum"></action>	
+		<action name="queryClientList" class="com.zhuika.action.FamilyNumberAction" method="queryClientList"></action>
+		<action name="addContacts" class="com.zhuika.action.FamilyNumberAction" method="addContacts"></action>	
+		<action name="queryContacts" class="com.zhuika.action.FamilyNumberAction" method="queryContacts"></action>				
+		<action name="sendContacts" class="com.zhuika.action.FamilyNumberAction" method="sendContacts"></action>
+		<action name="updateContacts" class="com.zhuika.action.FamilyNumberAction" method="updateContacts"></action>		
+								
+	</package>
+	
+	<!-- 计步模块 -->
+	<package name="pedoMeter" namespace="/pedoMeter" extends="struts-default">
+		<action name="searchPedoMeter" class="com.zhuika.action.PedometerAction" method="searchPedoMeter"></action>		
+	</package>
+	<!-- 实时定位-->
+	<package name="rtp" namespace="/rtp" extends="struts-default">
+		<action name="updateRtp" class="com.zhuika.action.RtPositionAction" method="updateRtp"></action>
+		<action name="searchRtp" class="com.zhuika.action.RtPositionAction" method="searchRtp"></action>
+	</package>
+	<!-- 监听功能-->
+	<package name="listen" namespace="/listen" extends="struts-default">
+		<action name="searchListen" class="com.zhuika.action.ListenAction" method="searchListen"></action>
+		<action name="sendListen" class="com.zhuika.action.ListenAction" method="sendListen"></action>
+	</package>
+	<!-- 电池电量-->
+	<package name="battery" namespace="/battery" extends="struts-default">
+		<action name="searchBattery" class="com.zhuika.action.BatteryAction" method="searchBattery"></action>
+	</package>
+	<!-- 设备上线-->
+	<package name="online" namespace="/online" extends="struts-default">
+		<action name="searchOnline" class="com.zhuika.action.OnlineAction" method="searchOnline"></action>
+		<action name="getOnlineNumber" class="com.zhuika.action.OnlineAction" method="getOnlineNumber"></action>
+	</package>
+	<!-- 留言模块-->
+	<package name="feedback" namespace="/feedback" extends="struts-default">
+		<action name="getCatetory" class="com.zhuika.action.FeedbackAction" method="getCatetory"></action>
+		<action name="postFeedBack" class="com.zhuika.action.FeedbackAction" method="postFeedBack"></action>
+		<action name="getFeedBack" class="com.zhuika.action.FeedbackAction" method="getFeedBack"></action>
+	</package>	
+	<!-- 好友模块-->
+	<package name="friend" namespace="/friend" extends="struts-default">
+		<action name="searchSerialNumber" class="com.zhuika.action.SerialNumAction" method="searchSerialNumber"></action>	
+		<action name="searchUser" class="com.zhuika.action.UserAction" method="searchUser"></action>
+		<action name="postFriendReq" class="com.zhuika.action.UserAction" method="postFriendReq"></action>
+		<action name="queryFriendList" class="com.zhuika.action.UserAction" method="queryFriendList"></action>
+		<action name="passFriendReq" class="com.zhuika.action.UserAction" method="passFriendReq"></action>
+		<action name="repeatFriendReq" class="com.zhuika.action.UserAction" method="passFriendReq"></action>
+	</package>	
+	
+	<!-- 奖励体系 -->
+	<package name="reward" namespace="/reward" extends="struts-default">
+	    <action name="newReWard" class="com.zhuika.action.RewardAction" method="newReWard"></action>
+		<action name="searchReWard" class="com.zhuika.action.RewardAction" method="searchReWard"></action>
+		<action name="sendFromList" class="com.zhuika.action.RewardAction" method="sendFromList"></action>		
+	</package>		
+	<!--支付-->
+	<package name="pay" namespace="/pay" extends="struts-default">
+		<action name="aliiosCallBack" class="com.zhuika.action.FamilyNumberAction" method="alipayCallBack"></action>	
+		<action name="aliandroidCallBack" class="com.zhuika.action.FamilyNumberAction" method="alipayCallBack"></action>			
+	</package>	
+	<!--推送-->
+	<package name="push" namespace="/push" extends="struts-default">
+		<action name="androidInfo" class="com.zhuika.action.PushAction" method="queryInfo"></action>
+		<action name="iosInfo" class="com.zhuika.action.PushAction" method="queryInfo"></action>
+		<action name="setInfo" class="com.zhuika.action.PushAction" method="setInfo"></action>		
+		<action name="pushMsg" class="com.zhuika.action.PushAction" method="pushMsg"></action>		
+	</package>	
+	
+	<!-- 设备运动模块 -->
+	<package name="sport" namespace="/sport" extends="struts-default">
+	    <action name="sportAdd" class="com.zhuika.action.SerialNumSportAction" method="sportAdd"></action>	
+	    <action name="sportQuery" class="com.zhuika.action.SerialNumSportAction" method="sportQuery"></action>
+	</package>	
+</struts>

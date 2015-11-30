@@ -1,0 +1,23 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>Untitled</title>
+	</head>
+
+	<body>
+		<form action="/sw/reward/newReWard" method="post"
+			enctype="multipart/form-data">
+			<input type="file" size="30" name="usrimg"/>&nbsp;&nbsp;<input type="text" name="name0" value="第一个文件" /><br />
+			<input type="text" value="07ec7e49-5649-4bd3-b07c-e6120237b940" name="usrid"/><br/>
+			<input type="text" value="685802b4-d04d-4500-8460-d80169d4599b" name="serialnumid"/><br/>
+			<input type="text" value="title" name="title"/><br/>
+			<input type="text" value="content" name="content"/>	<br/>
+			<input type="text" value="score:10" name="score"/>	<br/>
+			<input type="text" value="product:bike" name="product"/>	<br/>	
+			<input type="text" value="0" name="category"/>	<br/>	
+			<input name="up" type="submit" value="上传snimg" />
+		</form>
+	</body>
+</html>

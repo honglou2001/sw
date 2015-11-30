@@ -1,0 +1,22 @@
+package com.zhuika.dao;
+
+import java.util.HashMap;
+import java.util.List;
+
+
+import com.users.ejb.SerialnumberSport;
+
+public interface ISerialnumberSportDao {
+	
+    public void AddSerialnumberSport(SerialnumberSport serialnumberSportInfo) ;
+	
+	public void UpdateSerialnumberSport(SerialnumberSport serialnumberSportInfo) ;
+	
+	public void DeleteSerialnumberSport(String id) ;
+	
+	public SerialnumberSport findSerialnumberSport(String id) ;
+	
+	public int GetSerialnumberSportCount(HashMap<String, String> map);
+	
+	public List<SerialnumberSport> ListSerialnumberSport(int offset, int length,HashMap<String, String> map);
+}

@@ -1,0 +1,158 @@
+/*
+ * Copyright 2012 The Netty Project
+ *
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+package com.zhuika.discard;
+
+import java.nio.charset.Charset;
+
+
+
+
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+
+/**
+ * Handles a client-side channel.
+ */
+public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
+    private String info;
+    private byte[] byteMsg;
+	public DiscardClientHandler(String info) {
+		this.info=info;
+	}
+	
+	public DiscardClientHandler(byte[] msg) {
+		this.byteMsg=msg;
+	}
+
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) {
+//		String message = "24240011123456789102380002daa50d0a";	
+		if(this.byteMsg!=null && this.byteMsg.length>0){
+			
+			String info = Hex.byteToArray(this.byteMsg);			
+//			System.out.println("yang send "+info);						
+			ctx.writeAndFlush(this.byteMsg);		
+		}
+		else if(this.info!=null && this.info.length()>0)
+		{
+			String message=info;
+			System.out.println("yang send "+message);
+			
+			byte[] b = HexString2Bytes(message);
+			
+			String hexStr = Hex.byteToArray(b);
+			System.out.println(hexStr);	
+			ctx.writeAndFlush(b);
+		}
+		ctx.channel().close();
+	}
+
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) {
+		
+	}
+
+	@Override
+	public void channelRead0(ChannelHandlerContext ctx, Object msg)
+			throws Exception {
+		ByteBuf in=(ByteBuf) msg;
+		// 接收到包的长度
+		int length = in.readableBytes();
+		System.out.println("字节数:" + length);
+		// 终端设备上报到服务器位始 $$
+		String head = in.readBytes(2).toString(Charset.defaultCharset());
+		System.out.println(head);
+		// 从包的字段得到包的长度
+		short l = in.readShort();
+		System.out.println(l);
+		// 得到产品id 序列号
+		String serialNumber = byteToArray(in.readBytes(7).array());
+		System.out.println(serialNumber);
+		// 得到协议号
+		String agreement = byteToArray(in.readBytes(2).array());
+		System.out.println(agreement);
+		// 得到数据
+		String content = new String(Hex.decodeHex(byteToArray(in.readBytes(length - 17).array()).toCharArray()));//byteToArray(in.readBytes(l - 17).array());			
+		System.out.println(content);
+		//得到标志位
+		//String flag=byteToArray(in.readBytes(1).array());
+		//System.out.println(flag);
+		// 得到校验位 checksum
+		String checksum = byteToArray(in.readBytes(2).array());
+		System.out.println(checksum);
+		// 得到结束符\r\n
+		String end = byteToArray(in.readBytes(2).array());
+		System.out.println(end);
+		//Thread.sleep(70000);
+		String message = "24240011"+serialNumber+"0002daa50d0a2424000d0a";
+		byte[] b = HexString2Bytes(message);
+		System.out.println(Hex.byteToArray(b));
+		ctx.writeAndFlush(b);
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+		// Close the connection when an exception is raised.
+		cause.printStackTrace();
+		ctx.close();
+	}
+
+	// 从十六进制字符串到字节数组转换
+	private static byte[] HexString2Bytes(String hexstr) {
+		byte[] b = new byte[hexstr.length() / 2];
+		int j = 0;
+		for (int i = 0; i < b.length; i++) {
+			char c0 = hexstr.charAt(j++);
+			char c1 = hexstr.charAt(j++);
+			b[i] = (byte) ((parse(c0) << 4) | parse(c1));
+		}
+		return b;
+	}
+
+	private static int parse(char c) {
+		if (c >= 'a')
+			return (c - 'a' + 10) & 0x0f;
+		if (c >= 'A')
+			return (c - 'A' + 10) & 0x0f;
+		return (c - '0') & 0x0f;
+	}
+
+	public static int CRC_XModem(byte[] bytes) {
+		int crc = 0x00; // initial value
+		int polynomial = 0x1021;
+		for (int index = 0; index < bytes.length; index++) {
+			byte b = bytes[index];
+			for (int i = 0; i < 8; i++) {
+				boolean bit = ((b >> (7 - i) & 1) == 1);
+				boolean c15 = ((crc >> 15 & 1) == 1);
+				crc <<= 1;
+				if (c15 ^ bit)
+					crc ^= polynomial;
+			}
+		}
+		crc &= 0xffff;
+		return crc;
+	}
+	public static String byteToArray(byte[] data) {
+		String result = "";
+		for (int i = 0; i < data.length; i++) {
+			result += Integer.toHexString((data[i] & 0xFF) | 0x100)
+					.toUpperCase().substring(1, 3);
+		}
+		return result;
+	}
+}

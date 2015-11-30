@@ -1,0 +1,243 @@
+package com.zhuika.action;
+
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+
+import com.users.ejb.SerialnumberSport;
+import com.watch.ejb.Serialnumber;
+import com.watch.ejb.UserWatch;
+import com.zhuika.service.SerialNumberService;
+import com.zhuika.service.SerialNumberSportService;
+import com.zhuika.service.UserService;
+import com.zhuika.util.Jsonconf;
+
+
+public class SerialNumSportAction extends BaseAction implements ServletResponseAware,ServletRequestAware {
+
+	private static final long serialVersionUID = 1L;
+	private HttpServletRequest request;
+	private HttpServletResponse response;
+	
+	@Resource
+	private UserService userService;
+	@Resource
+	private SerialNumberService serialNumService;
+	@Resource
+	private SerialNumberSportService serialNumberSportSerivce;
+	
+	
+	@Override
+	public void setServletRequest(HttpServletRequest request) {
+		this.request = request;
+		
+	}
+	@Override
+	public void setServletResponse(HttpServletResponse response) {
+		this.response = response;
+		
+	}
+	
+	/**
+	 * 新增
+	 */
+	public void sportAdd() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+
+			String serialnumid = request.getParameter("serialnumid");
+			String usrid = request.getParameter("usrid");
+			
+			UserWatch user =null;
+			if(usrid!=null && usrid.length()>0){
+				user = userService.Find(usrid);
+			}
+			
+			if (user == null) {				
+				json.put("state", 2);
+				json.put("info", "新增失败，此用户不存在");		
+				out.print(json);
+				out.close();				
+				return ;
+			}
+			
+			Serialnumber serialnumberCheck = null;
+	
+			if(serialnumid!=null && !serialnumid.equals("")){
+		        HashMap<String, String> map = new HashMap<String, String>();
+		        map.put("a.funiqueid", serialnumid);
+		        
+				List<Serialnumber>  listSerialnumber= this.serialNumService.ListSerialnumberAll(0, 1,map);
+		        if(listSerialnumber!=null && listSerialnumber.size()>0)
+		        {
+		        	serialnumberCheck = listSerialnumber.get(0);
+		        }	        
+			}
+			
+			if(serialnumid ==null || serialnumberCheck == null)
+			{								
+				json.put("state", 3);
+				json.put("info", "新增失败，此设备序列号不存在");
+				json.put("data", null);				
+				out.print(json);
+				out.close();				
+				return;
+			}
+			
+	        
+//			if(serialnumberCheck.getFusrid()!=null && !serialnumberCheck.getFusrid().equals("") && !serialnumberCheck.getFusrid().equals(usrid))
+//			{								
+//				json.put("state", 4);
+//				json.put("info", "新增失败，此序列号不属于此用户账号");
+//				json.put("data", null);				
+//				out.print(json);
+//				out.close();				
+//				return;
+//			}
+						
+
+			String fsportdate = request.getParameter("fsportdate");
+			String fstep = request.getParameter("fstep");
+			String fdistance = request.getParameter("fdistance");
+			String fcal = request.getParameter("fcal");
+			String fheartrate = request.getParameter("fheartrate");
+			String fheartstr = request.getParameter("fheartstr");
+//			String fdatatousrid = request.getParameter("fdatatousrid");
+			String fremark = request.getParameter("fremark");
+			
+			SerialnumberSport serialnumberSportInfo = new SerialnumberSport();
+			
+			serialnumberSportInfo.setFuserid(usrid);
+			serialnumberSportInfo.setFsnid(serialnumid);
+			
+			if(fsportdate!=null &&!fsportdate.equals("")){
+				serialnumberSportInfo.setFsportdate(fsportdate);
+			}
+			
+			if(fstep!=null &&!fstep.equals("")){
+				serialnumberSportInfo.setFstep(Integer.parseInt(fstep));
+			}
+			
+			if(fdistance!=null &&!fdistance.equals("")){
+				serialnumberSportInfo.setFdistance(Integer.parseInt(fdistance));
+			}
+			
+			if(fcal!=null &&!fcal.equals("")){
+				serialnumberSportInfo.setFcal(Integer.parseInt(fcal));
+			}
+			
+			serialnumberSportInfo.setFheartrate(Integer.parseInt(fheartrate));
+			serialnumberSportInfo.setFheartstr(fheartstr);	
+			
+//			serialnumberSportInfo.setFdatatousrid(fdatatousrid);
+			serialnumberSportInfo.setFremark(fremark);
+			
+			
+			serialNumberSportSerivce.AddSerialnumberSport(serialnumberSportInfo);
+
+			json.put("state", 1);
+			json.put("info", "新增设备运动数据");
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+
+	public void sportQuery() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+
+			String serialnumid = request.getParameter("serialnumid");
+			String usrid = request.getParameter("usrid");
+			String sportdate = request.getParameter("sportdate");
+						
+			UserWatch user =null;
+			if(usrid!=null && usrid.length()>0){
+				user = userService.Find(usrid);
+			}
+			
+			if (user == null) {				
+				json.put("state", 2);
+				json.put("info", "查询失败，此用户不存在");		
+				out.print(json);
+				out.close();				
+				return ;
+			}
+			
+			Serialnumber serialnumberCheck = null;
+			if(serialnumid!=null && !serialnumid.equals("")){
+				serialnumberCheck = serialNumService.Find(serialnumid);
+				if(serialnumberCheck == null)
+				{								
+					json.put("state", 3);
+					json.put("info", "查询失败，此设备序列号不存在");
+					json.put("data", null);				
+					out.print(json);
+					out.close();				
+					return;
+				}
+			}
+			
+						
+			HashMap<String, String> mapSerial = new HashMap<String, String>();
+			mapSerial.put("userid", usrid);
+			mapSerial.put("serialnumid", serialnumid);
+			mapSerial.put("sportdate", sportdate);
+			
+			List<SerialnumberSport> listSports = this.serialNumberSportSerivce.ListSerialnumberSport(0, 100, mapSerial);
+
+			
+			JsonConfig  jconfig = Jsonconf.getCommonJsonConf();
+			jconfig.setExcludes(new String[] {"fsportrecid", "fincreaseid", "fsnnumber" ,"fmeterinfo","fval1","fva2","fchar1","fchar2","fdatastatus","ffieldstatus","fsporttime","fbleid","faddtime"});
+			
+
+			
+			json.put("state", 1);
+			json.put("info", "成功查询运动数据");
+			
+			json.put("user", JSONObject.fromObject(user, Jsonconf.getSertialNumJsonConf(this.request)));
+			json.put("Serialnumber", JSONObject.fromObject(serialnumberCheck, Jsonconf.getUserJsonConf(this.request)));
+			json.put("sportdata", JSONArray.fromObject(listSports, jconfig));
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+			json.put("user",null);
+			json.put("Serialnumber", null);
+			json.put("sportdata", null);
+
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+}

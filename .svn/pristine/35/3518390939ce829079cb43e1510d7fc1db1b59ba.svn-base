@@ -1,0 +1,617 @@
+package com.zhuika.action;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.processors.PropertyNameProcessor;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import org.springframework.stereotype.Controller;
+
+import com.watch.ejb.LocElectfence;
+import com.watch.ejb.Serialnumber;
+import com.zhuika.dao.impl.LocElectfenceDaoIml;
+import com.zhuika.dao.impl.UserDaoImpl;
+import com.zhuika.entity.LocationInfo;
+import com.zhuika.entity.User;
+import com.zhuika.factory.DAOException;
+import com.zhuika.service.LocationService;
+import com.zhuika.service.SerialNumberService;
+import com.zhuika.service.impl.UserServiceImpl;
+import com.zhuika.util.Jsonconf;
+import com.zhuika.util.Tools;
+
+@Controller
+public class LocationAction extends BaseAction implements ServletRequestAware,
+		ServletResponseAware {
+
+	private static final long serialVersionUID = 1L;
+	private HttpServletRequest request;
+	private HttpServletResponse response;
+	@Resource
+	private LocationService locationService;
+
+	@Resource
+	private UserServiceImpl userService;
+	
+	@Resource
+	private SerialNumberService serialNumService;
+
+	public void setServletRequest(HttpServletRequest request) {
+		this.request = request;
+	}
+
+	public void setServletResponse(HttpServletResponse response) {
+		this.response = response;
+	}
+
+	private List<LocElectfence> GetAllJson(String serialNumber,
+			String startTime, String endTime) {
+		LocElectfenceDaoIml locelect = new LocElectfenceDaoIml();
+
+		List<LocElectfence> listLocElectfences = new ArrayList<LocElectfence>();
+
+		HashMap<String, String> queryMap = new HashMap<String, String>();
+
+		queryMap.put("serialNumber", serialNumber);
+		queryMap.put("startTime", startTime);
+		queryMap.put("endTime", endTime);
+
+		listLocElectfences = locelect.GetAllData(0, 1000, queryMap);
+
+		return listLocElectfences;
+	}
+
+	private List<LocElectfence> GetAllJson(int pindex, int psize,String serialNumber,String areaNumber) {
+		LocElectfenceDaoIml locelect = new LocElectfenceDaoIml();
+
+		List<LocElectfence> listLocElectfences = new ArrayList<LocElectfence>();
+
+		HashMap<String, String> queryMap = new HashMap<String, String>();
+
+		queryMap.put("serialNumber", serialNumber);
+		queryMap.put("areaNumber", areaNumber);
+
+		listLocElectfences = locelect.GetAllData(pindex, psize, queryMap);
+
+		return listLocElectfences;
+	}
+
+	private List<LocElectfence> ListLatestLocaltion(String usrid) {
+		LocElectfenceDaoIml locelect = new LocElectfenceDaoIml();
+
+		List<LocElectfence> listLocElectfences = new ArrayList<LocElectfence>();
+
+		HashMap<String, String> queryMap = new HashMap<String, String>();
+
+		queryMap.put("user.funiqueid", usrid);
+
+		listLocElectfences = locelect.ListLatestLocaltion(queryMap);
+
+		return listLocElectfences;
+	}
+
+	public void searchAreaLog() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+			
+			String serialnumid = request.getParameter("serialnumid");
+			String areaNumber = request.getParameter("areaNumber");
+			
+			String pagesize = request.getParameter("pagesize");
+			String pageindex = request.getParameter("pageindex");
+
+			int npIndex = Integer.parseInt(pageindex);
+			int npSize = Integer.parseInt(pagesize);
+			
+			if (npIndex>0){
+				npIndex = (npIndex) * npSize;
+			}
+
+			if (npIndex < 0 && npSize <= 0) {
+				json.put("state", 2);
+				json.put("info", "页码索引或页码不合法");
+				json.put("serialnumid", serialnumid);
+
+				out.print(json);
+				out.close();
+				return;
+			}
+			
+			Serialnumber serialnumber = serialNumService.Find(serialnumid);
+			
+			if(serialnumber == null)
+			{
+				json.put("state", 2);
+				json.put("info", "找不到此序列号的信息");
+				json.put("serialnumid", serialnumid);
+				
+				out.print(json);
+				out.close();
+				
+				return;
+			}
+
+			String serialNumber =serialnumber.getSerialnumber();
+			
+			List<LocElectfence> lists = this.GetAllJson(npIndex, npSize,serialNumber,areaNumber);
+
+			JsonConfig jsonConfig = new JsonConfig();
+
+			jsonConfig.registerJsonValueProcessor(java.sql.Timestamp.class,
+					new JsonValueProcessor() {
+						private SimpleDateFormat sd = new SimpleDateFormat(
+								"yyyy-MM-dd HH:mm:ss");// new
+														// SimpleDateFormat("yyyy-MM-dd");
+
+						public Object processObjectValue(String key,
+								Object value, JsonConfig jsonConfig) {
+							return value == null ? "" : sd.format(value);
+						}
+
+						public Object processArrayValue(Object value,
+								JsonConfig jsonConfig) {
+							return null;
+						}
+					});
+
+			jsonConfig.setExcludes(new String[] { "faddtime",
+					"fdistance", "feltaddress","fpicture","battery",
+					"feltfenceid", "feltlatitude", "feltlongitude",
+					"feltscope", "ffieldstatus", "fincreaseid", "flocfenid",
+					"fremark", "fserialnumber" });
+
+			// 在到json层的时候的转换，比上面javapropertyName靠后执行
+			jsonConfig.registerJsonPropertyNameProcessor(LocElectfence.class,
+					new PropertyNameProcessor() {
+
+						@Override
+						public String processPropertyName(Class beanClass,
+								String name) {
+							if (name.equals("flongitude")) {
+								return "lon";
+							}
+							if (name.equals("flatitude")) {
+								return "lat";
+							}
+							if (name.equals("fupdatetime")) {
+								return "time";
+							}
+							return name;
+						}
+					});
+
+			JSONArray ja = new JSONArray();
+
+			json.put("state", 1);
+			json.put("info", "查询成功");
+
+			if (lists != null && lists.size() > 0) {
+				json.put("data", JSONArray.fromObject(lists, jsonConfig));
+
+			} else {
+				json.put("data", null);
+			}
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+			json.put("data", null);
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+
+	//
+	/**
+	 * 查询行踪轨迹
+	 */
+	public void searchMovement() {
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			// response.setContentType("text/html;charset=utf8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+			String serialNumber = request.getParameter("serialNumber");
+			String startTime = request.getParameter("startTime");
+			String endTime = request.getParameter("endTime");
+			System.out.println(serialNumber);
+			System.out.println(startTime);
+			System.out.println(endTime);
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date time1 = sdf.parse(startTime);
+			Date time2 = sdf.parse(endTime);
+
+			long diff = time2.getTime() - time1.getTime();
+			long days = diff / (1000 * 60 * 60 * 24);
+
+			// 7天之前的数据 用现在的时间nowTime和 time1,time2比较 如果nowTime-7>time2>time1
+			if (time1.getTime() > time2.getTime()) {
+				json.put("state", 2);
+				json.put("info", "开始时间大于结束时间");
+				json.put("data", null);
+				System.out.println("输入时间有误");
+			} else if (days > 7) {
+				json.put("state", 3);
+				json.put("info", "开始结束日期间隔不能大于7天");
+				json.put("data", null);
+				System.out.println("输入的时间超过7天");
+			} else {
+
+				JsonConfig jsonConfig = new JsonConfig();
+
+				jsonConfig.registerJsonValueProcessor(java.sql.Timestamp.class,
+						new JsonValueProcessor() {
+							private SimpleDateFormat sd = new SimpleDateFormat(
+									"yyyy-MM-dd HH:mm:ss");// new
+															// SimpleDateFormat("yyyy-MM-dd");
+
+							public Object processObjectValue(String key,
+									Object value, JsonConfig jsonConfig) {
+								return value == null ? "" : sd.format(value);
+							}
+
+							public Object processArrayValue(Object value,
+									JsonConfig jsonConfig) {
+								return null;
+							}
+						});
+
+				jsonConfig.setExcludes(new String[] { "faddtime",
+						"fareanumber", "fareaname", "fdatastatus", "fdistance",
+						"feltaddress", "feltfenceid", "feltlatitude",
+						"feltlongitude", "feltscope", "ffieldstatus",
+						"fincreaseid", "flocfenid", "freadCount", "fremark",
+						"fserialnumber" });
+
+				// jsonConfig.registerPropertyNameProcessor(target,
+				// propertyNameProcessor);
+				// 被registerJsonPropertyNameProcessor取代
+				// 在到json层的时候的转换，比上面javapropertyName靠后执行
+				// jsonConfig.setPropertyNameProcessorMatcher(propertyNameProcessorMatcher)(LocElectfence.class,
+				// new PropertyNameProcessor() {
+				//
+				// @Override
+				// public String processPropertyName(Class beanClass, String
+				// name) {
+				// if(name.equals("name")){
+				// return "nameJson";
+				// }
+				// return name;
+				// }
+				// });
+
+				// 在到json层的时候的转换，比上面javapropertyName靠后执行
+				jsonConfig.registerJsonPropertyNameProcessor(
+						LocElectfence.class, new PropertyNameProcessor() {
+
+							@Override
+							public String processPropertyName(Class beanClass,
+									String name) {
+								if (name.equals("flongitude")) {
+									return "lon";
+								}
+								if (name.equals("flatitude")) {
+									return "lat";
+								}
+								if (name.equals("fupdatetime")) {
+									return "time";
+								}
+								return name;
+							}
+						});
+
+				System.out.println("kkkkks");
+				// LocationInfo li = locationService.getLocation(serialNumber);
+				JSONArray ja = new JSONArray();
+
+				List<LocElectfence> lists = this.GetAllJson(serialNumber,
+						startTime, endTime);
+				json.put("state", 1);
+				json.put("info", "查询成功");
+
+				if (lists != null && lists.size() > 0) {
+					json.put("data", JSONArray.fromObject(lists, jsonConfig));
+
+				} else {
+					json.put("data", null);
+				}
+
+				// if (li != null) {
+				// String locationInfo = li.getText();
+				// String[] info = locationInfo.split("/");
+				// for (int i = 0; i < info.length; i++) {
+				// Date date = sdf.parse(info[i].split(",")[2]);
+				// if (date.getTime() > time1.getTime()
+				// && date.getTime() < time2.getTime()) {
+				// // 经度,纬度
+				// JSONObject json1 = new JSONObject();
+				// json1.put("lon", info[i].split(",")[0]);// 经度
+				// json1.put("lat", info[i].split(",")[1]);// 纬度
+				//
+				// sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				// json1.put("time", sdf.format(date));// 纬度
+				// ja.add(json1);
+				// }
+				// }
+				// }
+				// json.put("state", 1);
+				// json.put("info", "查询成功");
+				// json.put("data", ja);
+			}
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+			json.put("data", null);
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+
+	/**
+	 * 查询最后一次定位
+	 */
+	public void searchLocation() throws DAOException {
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			// response.setContentType("text/html;charset=utf8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+			String serialNumber = request.getParameter("serialNumber");
+			System.out.println(serialNumber);
+			LocationInfo li = locationService.getLocation(serialNumber);
+			if (li != null) {
+				if (li.getLng() != null && li.getLat() != null) {
+					json.put("state", 1);
+					json.put("info", "查询得到最新的定位");
+
+					JSONArray ja = new JSONArray();
+					// 经度,纬度
+					JSONObject json1 = new JSONObject();
+					json1.put("snnumber", serialNumber);// serialNumber
+					json1.put("longitude", li.getLng());// 经度
+					json1.put("latitude", li.getLat());// 纬度
+					ja.add(json1);
+					json.put("data", ja);
+
+				} else {
+					json.put("state", 0);
+					json.put("info", "无最新位置信息");
+					json.put("data", null);
+				}
+			}
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+			json.put("data", null);
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+
+	/**
+	 * 查询最后一次定位
+	 */
+	public void searchStationGps() {
+		PrintWriter out = null;
+		try {
+			request.setCharacterEncoding("utf-8");
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		response.setContentType("text/json");
+		response.setCharacterEncoding("utf-8");
+		try {
+			out = response.getWriter();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		String lbsInfo = request.getQueryString();
+
+		InputStream is = null;
+		URL url;
+		try {
+			url = new URL(lbsInfo);
+			// if(lbsInfo.indexOf("&Cell=")>0){
+			// url = new URL("http://222.76.219.175:99/api/geo/getlbs?" +
+			// lbsInfo);
+			// }else{
+			// //url = new
+			// URL("http://222.76.219.175:99/api/geo/getlbs?key=aeb454a43f6a12a55ac25ea14cd2de0d&Lac="+Integer.parseInt(lac,
+			// 16)+"&Cell="+Integer.parseInt(cid, 16));
+			// url = new URL("http://minigps.net/as?" + lbsInfo);
+			// }
+			System.out.println("url:" + url);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.connect();
+			is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "utf-8"));
+			String str = reader.readLine();
+
+			out.print(str);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				out.close();
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	/**
+	 * 查询最后一次定位,根据手机号码
+	 */
+	public void searchLoaPhone() {
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			// response.setContentType("text/html;charset=utf8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+			String phone = request.getParameter("phone");
+			String serialNumber = "";
+
+			// User usr = usrImpl.loginPhone(phone);
+
+			User usr = userService.login(phone);
+
+			if (usr != null && usr.getSerialNumber() != null) {
+				serialNumber = usr.getSerialNumber();
+			}
+
+			if (serialNumber != null && serialNumber.length() > 0) {
+				LocationInfo li = locationService.getLocation(serialNumber);
+				if (li != null) {
+					if (li.getLng() != null && li.getLat() != null) {
+						json.put("state", 1);
+						json.put("info", "查询得到最新的定位");
+
+						JSONArray ja = new JSONArray();
+						// 经度,纬度
+						JSONObject json1 = new JSONObject();
+						json1.put("snnumber", serialNumber);// serialNumber
+						json1.put("longitude", li.getLng());// 经度
+						json1.put("latitude", li.getLat());// 纬度
+						json1.put("address", "临时地址，以后使用具体真实地址");
+						ja.add(json1);
+						json.put("data", ja);
+
+					} else {
+						json.put("state", 0);
+						json.put("info", "无最新位置信息");
+						json.put("data", null);
+					}
+				}
+			} else {
+				json.put("state", 2);
+				json.put("info", "用户序列号为空");
+				json.put("data", null);
+			}
+		} catch (Exception e) {
+			json.put("state", -2);
+			json.put("info", e.getMessage());
+			json.put("data", null);
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+
+	/**
+	 * 查询最后一次定位,根据用户ID
+	 */
+	public void searchLoaUsrid() {
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+			String usrid = request.getParameter("usrid");
+
+			List<LocElectfence> lists = this.ListLatestLocaltion(usrid);
+
+			if (lists != null && lists.size() > 0) {
+
+				json.put("state", 1);
+				json.put("info", "查询得到最新的定位");
+
+				JsonConfig jsonConfig = Jsonconf.getSerialnumJsonConf(request);
+
+				jsonConfig.setExcludes(new String[] { "faddtime",
+						"feltfenceid", "feltlatitude", "feltlongitude",
+						"ffieldstatus", "fincreaseid", "flocfenid",
+						"fareaname", "fareanumber", "feltaddress", "feltscope",
+						"freadCount", "fremark", "fdatastatus", "fdistance" });
+
+				jsonConfig.registerJsonPropertyNameProcessor(
+						LocElectfence.class, new PropertyNameProcessor() {
+
+							@Override
+							public String processPropertyName(Class beanClass,
+									String name) {
+								if (name.equals("fserialnumber")) {
+									return "snnumber";
+								}
+								if (name.equals("flongitude")) {
+									return "longitude";
+								}
+								if (name.equals("flatitude")) {
+									return "latitude";
+								}
+								if (name.equals("faddress")) {
+									return "address";
+								}
+								return name;
+							}
+						});
+
+				// json1.put("snnumber", serialNumber);// serialNumber
+				// json1.put("longitude", li.getLng());// 经度
+				// json1.put("latitude", li.getLat());// 纬度
+				// json1.put("address", "临时地址，以后使用具体真实地址");
+
+				// json.put("data", lists);
+				json.put("data", JSONArray.fromObject(lists, jsonConfig));
+
+			} else {
+				json.put("state", 2);
+				json.put("info", "无此用户的最新定位数据");
+				json.put("data", null);
+			}
+		} catch (Exception e) {
+			json.put("state", -2);
+			json.put("info", e.getMessage());
+			json.put("data", null);
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+}

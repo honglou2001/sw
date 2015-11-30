@@ -1,0 +1,122 @@
+package com.zhuika.action;
+
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+
+import org.apache.struts2.interceptor.ServletRequestAware;
+import org.apache.struts2.interceptor.ServletResponseAware;
+import com.watch.ejb.LocElectfence;
+import com.zhuika.dao.impl.LocElectfenceDaoIml;
+import com.zhuika.util.Tools;
+
+public class LocEleAction  extends BaseAction implements ServletRequestAware,
+ServletResponseAware {
+	
+	private static final long serialVersionUID = 1L;
+	private HttpServletRequest request;
+	private HttpServletResponse response;
+
+
+	public void setServletRequest(HttpServletRequest request) {
+		this.request = request;
+	}
+
+	public void setServletResponse(HttpServletResponse response) {
+		this.response = response;
+	}
+
+	
+	public void queryLocEleChange(){
+		PrintWriter out=null;
+		JSONObject json=new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json"); 
+			response.setCharacterEncoding("utf-8");
+			out=response.getWriter();
+			
+			String serialNumber=request.getParameter("serialNumber");
+			String areaNumber=request.getParameter("areaNumber");
+			String areaName=request.getParameter("areaName");
+			
+			areaName = Tools.DecodeUtf8String(areaName);
+			
+			LocElectfenceDaoIml  locelect = new LocElectfenceDaoIml();
+			
+			try{			
+				HashMap<String, String> queryMap = new HashMap<String, String>();
+				
+				queryMap.put("serialNumber", serialNumber);
+				queryMap.put("areaNumber", areaNumber);
+				queryMap.put("areaName", areaName);
+				
+				List<LocElectfence>  listLocElectfence= locelect.GetAll(1, 2,queryMap);
+				
+				//List<LocElectfence>  listLocElectfence= new ArrayList<LocElectfence>();
+				
+				System.out.println(listLocElectfence.size());
+				if(!listLocElectfence.isEmpty()){	
+					
+					JsonConfig jsonConfig = new JsonConfig();
+
+					jsonConfig.registerJsonValueProcessor(java.sql.Timestamp.class,
+							new JsonValueProcessor() {
+								private SimpleDateFormat sd = new SimpleDateFormat(
+										"yyyy-MM-dd HH:mm:ss");// new
+																// SimpleDateFormat("yyyy-MM-dd");
+
+								public Object processObjectValue(String key, Object value,
+										JsonConfig jsonConfig) {
+									return value == null ? "" : sd.format(value);
+								}
+
+								public Object processArrayValue(Object value,
+										JsonConfig jsonConfig) {
+									return null;
+								}
+							});
+
+					
+					 jsonConfig.setExcludes(new String[] { "faddtime", "feltfenceid", "feltlatitude", "feltlongitude"
+							 , "ffieldstatus", "fincreaseid", "flatitude", "flocfenid","flongitude"});  
+					  
+					//jsonArr.add(JSONArray.fromObject(listLocElectfence,jsonConfig));	
+					//jsonArr.add(listLocElectfence);	
+					
+					json.put("state", 1);
+					json.put("info", "成功查询");
+					json.put("data",  JSONArray.fromObject(listLocElectfence,jsonConfig));
+				}
+				else
+				{
+					json.put("state", 1);
+					json.put("info", "成功查询，数据为空");
+					json.put("data",  null);
+				}
+				
+			}
+			catch (RuntimeException ex) 
+			{
+				json.put("state", 1);
+				json.put("info", ex.getMessage());
+				json.put("data",  null);
+			}
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info",  e.getMessage());
+			json.put("data",  null);
+		} finally{
+			out.print(json);
+			out.close();
+		}
+	}
+}

@@ -1,0 +1,108 @@
+package com.zhuika.service.impl;
+
+import java.util.Arrays;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+
+
+import com.zhuika.dao.IBindPhoneDao;
+import com.zhuika.dao.IInfoDao;
+import com.zhuika.dao.IUserDao;
+import com.zhuika.discard.DiscardClient;
+import com.zhuika.entity.BindPhone;
+import com.zhuika.entity.Info;
+import com.zhuika.entity.User;
+import com.zhuika.factory.DAOException;
+import com.zhuika.service.FamilyNoService;
+import com.zhuika.util.Hex;
+@Service("familyNoService")
+public class FamilyNoServiceImpl implements FamilyNoService {
+	@Resource
+    private IBindPhoneDao bindPhoneDao;
+	@Resource
+	private IInfoDao infoDao;
+	@Resource
+	private IUserDao userDao;
+	public BindPhone getBindPhone(String serialNumber) {		
+		try {
+			return bindPhoneDao.findBySeriaNumber(serialNumber);
+		} catch (DAOException e) {		
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public void updateBindPhone(BindPhone bindPhone) {
+		try {
+			User user=userDao.findBySerialNumber(bindPhone.getSerialNumber());				
+			user.setPhone(bindPhone.getMasterNo().substring(bindPhone.getMasterNo().indexOf("=")+1));
+			userDao.update(user);
+			bindPhoneDao.updatePhone(bindPhone);
+			String info = "40400050" + bindPhone.getSerialNumber() + "9990";// +Hex.encodeHexStr("sos_num1=15811806326,sos_num2=13036822362,sos_num3=15112270778,".getBytes());		
+			System.out.println(bindPhone.getMasterNo()+","+bindPhone.getSos()+","+bindPhone.getListenNo()+",");
+			info=info+Hex.encodeHexStr((bindPhone.getMasterNo()+","+bindPhone.getSos()+","+bindPhone.getListenNo()+",").getBytes())+"0032"+"0d0a";			
+			System.out.println(Hex.encodeHexStr((bindPhone.getMasterNo()+","+bindPhone.getSos()+","+bindPhone.getListenNo()+",").getBytes()));
+			byte b[] = HexString2Bytes(info);
+			System.out.println("b.toString:" + Arrays.toString(b));
+			System.out.println("b.length:" + b.length);
+			System.out.println(Integer.toHexString(b.length));
+			info="404000"+Integer.toHexString(b.length)+bindPhone.getSerialNumber()+"9990"+Hex.encodeHexStr((bindPhone.getMasterNo()+","+bindPhone.getSos()+","+bindPhone.getListenNo()+",").getBytes())+"0032"+"0d0a";
+			Info i=infoDao.findBySerialNumber(bindPhone.getSerialNumber());			
+			b=HexString2Bytes(info);
+			System.out.println(i.getIp()+":"+i.getPort());
+			String[] args={i.getIp(),String.valueOf(i.getPort()),info};
+			DiscardClient.getClient(args);
+		} catch (Exception e) {		
+			e.printStackTrace();
+		}
+
+	}
+
+	public void saveBindPhone(BindPhone bindPhone) {
+		try {
+			bindPhoneDao.addPhone(bindPhone);
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+
+	}
+	// 从十六进制字符串到字节数组转换
+				private static byte[] HexString2Bytes(String hexstr) {
+				  	byte[] b = new byte[hexstr.length() / 2];
+				  	int j = 0;
+				  	for (int i = 0; i < b.length; i++) {
+				  		char c0 = hexstr.charAt(j++);
+				  		char c1 = hexstr.charAt(j++);
+				  		b[i] = (byte) ((parse(c0) << 4) | parse(c1));
+				  	}
+				  	return b;
+				}
+
+				private static int parse(char c) {
+				  	if (c >= 'a')
+				  		return (c - 'a' + 10) & 0x0f;
+				  	if (c >= 'A')
+				  		return (c - 'A' + 10) & 0x0f;
+				  	return (c - '0') & 0x0f;
+				  }
+
+				public static int CRC_XModem(byte[] bytes) {
+				  	int crc = 0x00;
+				  	int polynomial = 0x1021;
+				  	for (int index = 0; index < bytes.length; index++) {
+				  		byte b = bytes[index];
+				  		for (int i = 0; i < 8; i++) {
+				  			boolean bit = ((b >> (7 - i) & 1) == 1);
+				  			boolean c15 = ((crc >> 15 & 1) == 1);
+				  			crc <<= 1;
+				  			if (c15 ^ bit)
+				  				crc ^= polynomial;
+				  		}
+				  	}
+				  	crc &= 0xffff;
+				  	return crc;
+				}
+}
