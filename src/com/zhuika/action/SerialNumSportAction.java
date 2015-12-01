@@ -20,6 +20,7 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import com.users.ejb.SerialnumberDatarelate;
 import com.users.ejb.SerialnumberDatauser;
 import com.users.ejb.SerialnumberSport;
+import com.users.ejb.SerialnumberWeight;
 import com.watch.ejb.Serialnumber;
 import com.watch.ejb.UserWatch;
 import com.zhuika.service.SerialNumberService;
@@ -733,7 +734,7 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 	        map.put("a.fappcountid", usrid);
 	        	        
 			List<SerialnumberDatarelate>  listdbUser= this.serialNumberSportSerivce.ListSerialnumberDatarelate(0, 10, map);
-		    if(listdbUser!=null && listdbUser.size()==0)
+		    if(listdbUser==null|| listdbUser.size()==0)
 	        {
 	        	json.put("state", 4);
 				json.put("info", "解除关联失败，找不到此用户的家庭成员与此序列号的关联信息");		
@@ -751,6 +752,242 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 			JsonConfig  jconfig = Jsonconf.getUserJsonConf(request);
 			jconfig.setExcludes(new String[] {"fincreaseid","fisdelete", "fdeletetime"});			
 			json.put("data", JSONObject.fromObject(relInfo, jconfig));
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+	
+	/**
+	 * 增加称重数据
+	 */
+	public void weightAdd() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+
+			String usrid = request.getParameter("usrid");
+			String Serialnumid = request.getParameter("Serialnumid");
+			String fweight = request.getParameter("weight");
+			String fheight = request.getParameter("height");
+			String fbmi = request.getParameter("bmi");
+			String fcalorie = request.getParameter("calorie");
+			String ffatcontent = request.getParameter("fatcontent");
+			String fbonecontent = request.getParameter("bonecontent");
+			String fmusclecontent = request.getParameter("musclecontent");
+			String fwatercontent = request.getParameter("watercontent");
+			String fvisceralfatcontent = request.getParameter("visceralfatcontent");
+			String fremark = Tools.DecodeUtf8String(request.getParameter("fremark"));
+			
+			UserWatch user =null;
+			if(usrid!=null && usrid.length()>0){
+				user = userService.Find(usrid);
+			}
+			
+			if (user == null) {				
+				json.put("state", 2);
+				json.put("info", "新增重量数据失败，此APP用户不存在");		
+				out.print(json);
+				out.close();				
+				return ;
+			}
+			
+			HashMap<String, String> mapSerial = new HashMap<String, String>();
+			mapSerial.put("user.funiqueid",usrid);
+			mapSerial.put("a.funiqueid",Serialnumid);
+			List<Serialnumber> listSerialNumber = this.serialNumService.GetAll(0, 100, mapSerial);
+		    if(listSerialNumber==null || listSerialNumber.size()==0)
+	        {
+	        	json.put("state", 3);
+				json.put("info", "新增重量数据失败，找不到此用户与序列号的绑定关系，请确认设备序列号已经注册绑定");		
+				out.print(json);
+				out.close();				
+				return ;
+	        }
+			
+		    SerialnumberWeight snWeight = new SerialnumberWeight();	 
+		    snWeight.setFappcountid(usrid);
+		    snWeight.setFserialnumid(Serialnumid);
+		    
+	        HashMap<String, String> map = new HashMap<String, String>();
+	        map.put("a.funiqueid", Serialnumid);
+	        map.put("a.fappcountid", usrid);
+	        	        
+			List<SerialnumberDatarelate>  listdbUser= this.serialNumberSportSerivce.ListSerialnumberDatarelate(0, 10, map);
+			SerialnumberDatarelate relInfo  = null;
+			if(listdbUser!=null && listdbUser.size()>0)
+	        {
+				relInfo = listdbUser.get(0);
+	        }
+			
+			if(relInfo!=null)
+			{
+				if(relInfo.getFsndusrid()!=null && !relInfo.getFsndusrid().equals(""))
+				{
+					if(relInfo.getFstarttime() == null || relInfo.getFendtime() ==null){
+						snWeight.setFsndusrid(relInfo.getFsndusrid());
+					}
+					if(relInfo.getFstarttime() != null && relInfo.getFendtime() !=null){
+						Timestamp nowdate1 = ByteConverter.getTimeStamp();
+						
+						if(nowdate1.after(relInfo.getFstarttime()) && nowdate1.before(relInfo.getFendtime()))
+						{
+							snWeight.setFsndusrid(relInfo.getFsndusrid());
+						}
+					}
+				}
+			}
+
+			
+			if(fweight!=null && !fweight.equals("")){
+				snWeight.setFweight(new java.math.BigDecimal(fweight));
+			}
+			if(fheight!=null && !fheight.equals("")){
+				snWeight.setFheight(new java.math.BigDecimal(fheight));
+			}
+			if(fbmi!=null && !fbmi.equals("")){
+				snWeight.setFbmi(new java.math.BigDecimal(fbmi));
+			}
+			if(fcalorie!=null && !fcalorie.equals("")){
+				snWeight.setFcalorie(new java.math.BigDecimal(fcalorie));
+			}
+			if(ffatcontent!=null && !ffatcontent.equals("")){
+				snWeight.setFfatcontent(new java.math.BigDecimal(ffatcontent));
+			}
+			if(fbonecontent!=null && !fbonecontent.equals("")){
+				snWeight.setFbonecontent(new java.math.BigDecimal(fbonecontent));
+			}
+		        	
+			if(fmusclecontent!=null && !fmusclecontent.equals("")){
+				snWeight.setFmusclecontent(new java.math.BigDecimal(fmusclecontent));
+			}
+			if(fwatercontent!=null && !fwatercontent.equals("")){
+				snWeight.setFwatercontent(new java.math.BigDecimal(fwatercontent));
+			}
+			if(fvisceralfatcontent!=null && !fvisceralfatcontent.equals("")){
+				snWeight.setFvisceralfatcontent(new java.math.BigDecimal(fvisceralfatcontent));
+			}
+			snWeight.setFremark(fremark);
+			serialNumberSportSerivce.AddSerialnumberWeight(snWeight);
+
+			json.put("state", 1);
+			json.put("info", "成功增加体重数据。");
+			
+			JsonConfig  jconfig = Jsonconf.getUserJsonConf(request);
+			jconfig.setExcludes(new String[] {"fincreaseid","FAddTime", "FDataStatus"});			
+			json.put("data", JSONObject.fromObject(snWeight, jconfig));
+
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+	
+	/**
+	 * 查询称重数据
+	 */
+	public void weightQuery() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+
+			String usrid = request.getParameter("usrid");
+			String Serialnumid = request.getParameter("Serialnumid");
+			
+			String pagesize = request.getParameter("pagesize");
+			String pageindex = request.getParameter("pageindex");
+			
+			int npIndex = Integer.parseInt(pageindex);
+			int npSize = Integer.parseInt(pagesize);
+			
+			if (npIndex>0){
+				npIndex = (npIndex) * npSize;
+			}
+			
+			if(npIndex<0 && npSize<=0)
+			{
+				json.put("state", 2);
+				json.put("info", "页码索引或页码不合法");
+				
+				out.print(json);
+				out.close();				
+				return;
+			}
+						
+			UserWatch user =null;
+			if(usrid!=null && usrid.length()>0){
+				user = userService.Find(usrid);
+			}
+			
+			if (user == null) {				
+				json.put("state", 3);
+				json.put("info", "查询重量数据失败，此APP用户不存在");		
+				out.print(json);
+				out.close();				
+				return ;
+			}
+			
+			Serialnumber serialnumber =null;
+			if(Serialnumid!=null && Serialnumid.length()>0){
+				serialnumber = serialNumService.Find(Serialnumid);
+			}
+			if (serialnumber == null) {				
+				json.put("state", 4);
+				json.put("info", "此设备id不存在，id为"+Serialnumid);		
+				out.print(json);
+				out.close();				
+				return ;
+			}
+			
+			HashMap<String, String> mapSerial = new HashMap<String, String>();
+			mapSerial.put("user.funiqueid",usrid);
+			mapSerial.put("a.funiqueid",Serialnumid);
+			List<Serialnumber> listSerialNumber = this.serialNumService.GetAll(0, 100, mapSerial);
+		    if(listSerialNumber==null || listSerialNumber.size()==0)
+	        {
+	        	json.put("state", 5);
+				json.put("info", "查询重量数据失败，找不到此用户与序列号的绑定关系，请确认设备序列号已经注册绑定");		
+				out.print(json);
+				out.close();				
+				return ;
+	        }
+			
+		    SerialnumberWeight snWeight = new SerialnumberWeight();	 
+		    
+		    //pagesize 每次显示多少条数据；pageindex 显示第几页，0为第一页；排序为记录新增时间倒序；		    		    
+	        HashMap<String, String> map = new HashMap<String, String>();
+	        map.put("FSerialnumid", Serialnumid);
+	        map.put("FAppcountid", usrid);	        	        
+			List<SerialnumberWeight>  listdbWeight= this.serialNumberSportSerivce.ListSerialnumberWeight(npIndex,npSize, map);
+			
+			json.put("state", 1);
+			json.put("info", "成功查询体重数据。");			
+			JsonConfig  jconfig = Jsonconf.getUserJsonConf(request);
+			
+			json.put("user", JSONObject.fromObject(user, jconfig));
+			json.put("serialnumber", JSONObject.fromObject(serialnumber, Jsonconf.getSerialnumJsonConf(request)));						
+			
+			jconfig.setExcludes(new String[] {"fincreaseid","FAddTime", "FDataStatus"});
+			json.put("data", JSONArray.fromObject(listdbWeight, jconfig));
 
 		} catch (Exception e) {
 			json.put("state", -1);

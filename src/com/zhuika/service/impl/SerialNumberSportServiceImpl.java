@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.users.ejb.SerialnumberDatarelate;
 import com.users.ejb.SerialnumberDatauser;
 import com.users.ejb.SerialnumberSport;
+import com.users.ejb.SerialnumberWeight;
 import com.zhuika.dao.ISerialnumberSportDao;
 import com.zhuika.service.SerialNumberSportService;
 
@@ -160,6 +161,54 @@ public class SerialNumberSportServiceImpl  implements SerialNumberSportService {
 			int length, HashMap<String, String> map) {
 		// TODO Auto-generated method stub
 		return 	this.serialnumberSportDao.ListSerialnumberDatarelate(offset,length,map);
+	}
+
+	@Override
+	public void AddSerialnumberWeight(SerialnumberWeight serialnumberWeightInfo) {
+		// TODO Auto-generated method stub
+		
+		this.serialnumberSportDao.AddSerialnumberWeight(serialnumberWeightInfo);
+		
+	}
+
+	@Override
+	public void UpdateSerialnumberWeight(
+			SerialnumberWeight serialnumberWeightInfo) {
+		// TODO Auto-generated method stub
+		this.serialnumberSportDao.UpdateSerialnumberWeight(serialnumberWeightInfo);
+	}
+
+	@Override
+	public void UpdateSerialnumberWeight(
+			SerialnumberWeight serialnumberWeightInfo,
+			HashMap<String, String> map) {
+		// TODO Auto-generated method stub
+		this.serialnumberSportDao.UpdateSerialnumberWeight(serialnumberWeightInfo, map);
+	}
+
+	@Override
+	public void DeleteSerialnumberWeight(String id) {
+		// TODO Auto-generated method stub
+		this.serialnumberSportDao.DeleteSerialnumberWeight(id);
+	}
+
+	@Override
+	public SerialnumberWeight findSerialnumberWeight(String id) {
+		// TODO Auto-generated method stub
+		return this.serialnumberSportDao.findSerialnumberWeight(id);
+	}
+
+	@Override
+	public int GetSerialnumberWeightCount(HashMap<String, String> map) {
+		// TODO Auto-generated method stub
+		return this.serialnumberSportDao.GetSerialnumberWeightCount(map);
+	}
+
+	@Override
+	public List<SerialnumberWeight> ListSerialnumberWeight(int offset,
+			int length, HashMap<String, String> map) {
+		// TODO Auto-generated method stub
+		return this.serialnumberSportDao.ListSerialnumberWeight(offset, length, map);
 	}
 
 }

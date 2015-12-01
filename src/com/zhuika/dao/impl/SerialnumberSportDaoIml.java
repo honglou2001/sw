@@ -13,6 +13,8 @@ import com.users.ejb.SerialnumberDatarelate;
 import com.users.ejb.SerialnumberDatarelateService;
 import com.users.ejb.SerialnumberSport;
 import com.users.ejb.SerialnumberSportService;
+import com.users.ejb.SerialnumberWeight;
+import com.users.ejb.SerialnumberWeightService;
 import com.zhuika.dao.ISerialnumberSportDao;
 import com.zhuika.dao.SHBaseDAO;
 import com.zhuika.util.ejbproxy;
@@ -318,5 +320,109 @@ public class SerialnumberSportDaoIml  extends SHBaseDAO implements ISerialnumber
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+	public void AddSerialnumberWeight(SerialnumberWeight serialnumberWeight) {
+		Context weblogicContext = ejbproxy.getInitialConnection();
+		SerialnumberWeightService serviceClient;
+		try {
+			serviceClient = (SerialnumberWeightService) weblogicContext.lookup("SerialnumberWeightBean/remote");
+			serviceClient.AddSerialnumberWeight(serialnumberWeight);
+		} catch (NamingException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public int GetSerialnumberWeightCount(HashMap<String, String> map)
+	{
+		int total = 0 ;			
+		Context weblogicContext = ejbproxy.getInitialConnection();
+		SerialnumberWeightService serviceClient;
+		try {
+			serviceClient = (SerialnumberWeightService)weblogicContext.lookup("SerialnumberWeightBean/remote");
+			total = serviceClient.GetSerialnumberWeightCount(map);	
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return total;
+	}
+	
+
+	public List<SerialnumberWeight> ListSerialnumberWeight(int offset, int length,HashMap<String, String> map)
+	{		
+		List<SerialnumberWeight> listSerialnumberWeight =  new ArrayList<SerialnumberWeight>();				
+		try{
+			Context weblogicContext = ejbproxy.getInitialConnection();			
+			SerialnumberWeightService serviceClient = (SerialnumberWeightService)weblogicContext.lookup("SerialnumberWeightBean/remote");
+			listSerialnumberWeight = serviceClient.ListSerialnumberWeight(offset, length,map);	
+
+		  } catch (NamingException ne) {
+			   // TODO: handle exception
+			   System.err.println("不能连接NamingException在："+ne.toString());
+			   ne.printStackTrace();
+			  }
+		
+		return listSerialnumberWeight;		
+	}
+    
+    public SerialnumberWeight findSerialnumberWeight(String fid)
+	{		
+		SerialnumberWeight serialnumberWeight = new SerialnumberWeight();				
+		try{
+			Context weblogicContext = ejbproxy.getInitialConnection();			
+			SerialnumberWeightService serviceClient = (SerialnumberWeightService)weblogicContext.lookup("SerialnumberWeightBean/remote");
+			serialnumberWeight = serviceClient.findSerialnumberWeight(fid);	
+
+		  } catch (NamingException ne) {
+			   // TODO: handle exception
+			   System.err.println("不能连接NamingException在："+ne.toString());
+			   ne.printStackTrace();
+			  }
+		
+		return serialnumberWeight;		
+	}
+    
+  	public void UpdateSerialnumberWeight(SerialnumberWeight serialnumberWeight) {		
+		Context weblogicContext = ejbproxy.getInitialConnection();
+		SerialnumberWeightService serviceClient;
+		try {
+			serviceClient = (SerialnumberWeightService)weblogicContext.lookup("SerialnumberWeightBean/remote");
+			serviceClient.UpdateSerialnumberWeight(serialnumberWeight);	
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}        
+
+   	public void UpdateSerialnumberWeight(SerialnumberWeight serialnumberWeight,HashMap<String, String> map) {		
+		Context weblogicContext = ejbproxy.getInitialConnection();
+		SerialnumberWeightService serviceClient;
+		try {
+			serviceClient = (SerialnumberWeightService)weblogicContext.lookup("SerialnumberWeightBean/remote");
+			serviceClient.UpdateSerialnumberWeight(serialnumberWeight,map);	
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}    
+   
+	public void DeleteSerialnumberWeight(String id) {
+		Context weblogicContext = ejbproxy.getInitialConnection();
+		SerialnumberWeightService serviceClient;
+		try {
+			serviceClient = (SerialnumberWeightService) weblogicContext
+					.lookup("SerialnumberWeightBean/remote");
+			serviceClient.DeleteSerialnumberWeight(id);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}   
+
+
 }

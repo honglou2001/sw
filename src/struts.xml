@@ -157,5 +157,7 @@
 	    <action name="memberDelete" class="com.zhuika.action.SerialNumSportAction" method="memberDelete"></action>
 	    <action name="relevanceAdd" class="com.zhuika.action.SerialNumSportAction" method="relevanceAdd"></action>
 	    <action name="relevanceDel" class="com.zhuika.action.SerialNumSportAction" method="relevanceDel"></action>
+	    <action name="weightAdd" class="com.zhuika.action.SerialNumSportAction" method="weightAdd"></action>
+	    <action name="weightQuery" class="com.zhuika.action.SerialNumSportAction" method="weightQuery"></action>	    
 	</package>	
 </struts>

@@ -7,6 +7,7 @@ import java.util.List;
 import com.users.ejb.SerialnumberDatarelate;
 import com.users.ejb.SerialnumberDatauser;
 import com.users.ejb.SerialnumberSport;
+import com.users.ejb.SerialnumberWeight;
 
 public interface ISerialnumberSportDao {
 	
@@ -49,5 +50,19 @@ public interface ISerialnumberSportDao {
 	public int GetSerialnumberDatarelateCount(HashMap<String, String> map);
 	
 	public List<SerialnumberDatarelate> ListSerialnumberDatarelate(int offset, int length,HashMap<String, String> map);
+	
+    public void AddSerialnumberWeight(SerialnumberWeight serialnumberWeightInfo) ;
+	
+	public void UpdateSerialnumberWeight(SerialnumberWeight serialnumberWeightInfo) ;
+    
+    public void UpdateSerialnumberWeight(SerialnumberWeight serialnumberWeightInfo,HashMap<String, String> map) ;
+	
+	public void DeleteSerialnumberWeight(String id) ;
+	
+	public SerialnumberWeight findSerialnumberWeight(String id) ;
+	
+	public int GetSerialnumberWeightCount(HashMap<String, String> map);
+	
+	public List<SerialnumberWeight> ListSerialnumberWeight(int offset, int length,HashMap<String, String> map);
 	
 }
