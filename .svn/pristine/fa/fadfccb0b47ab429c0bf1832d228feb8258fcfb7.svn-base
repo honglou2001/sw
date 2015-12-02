@@ -12,8 +12,7 @@
 		<action name="updatePassword" class="com.zhuika.action.UserAction" method="updatePassword"></action>
 		<action name="getUser" class="com.zhuika.action.UserAction" method="getUser"></action>
 		<action name="userUpdate" class="com.zhuika.action.UserAction" method="userUpdate"></action>	
-		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>
-		<action name="userRegOnly" class="com.zhuika.action.UserAction" method="userRegOnly"></action>													
+		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>											
 	</package>
 	
 	<!-- 手环序列号模块 -->

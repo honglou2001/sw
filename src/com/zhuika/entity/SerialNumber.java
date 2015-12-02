@@ -13,6 +13,7 @@ public class SerialNumber  implements java.io.Serializable {
     private String listenStatus;
     private String online;
     private String funiqueid;
+    private Integer fdevtype;	
     
 	public String getOnline() {
 		return online;
@@ -89,5 +90,13 @@ public class SerialNumber  implements java.io.Serializable {
 	}
 	public void setFuniqueid(String funiqueid) {
 		this.funiqueid = funiqueid;
+	}
+	
+	public Integer getFdevtype() {
+		return fdevtype;
+	}
+
+	public void setFdevtype(Integer fdevtype) {
+		this.fdevtype = fdevtype;
 	}
 }

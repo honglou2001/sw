@@ -145,51 +145,89 @@ public class UserServiceImpl implements UserService {
 			return "success";
 		}
 	}
-	public String reg(UserWatch user) throws DAOException
+	public String reg(UserWatch user,int devtype) throws DAOException
 	{
-		SerialNumber serialNumber=serialNumberDao.findBySerialNumber(user.getSerialnumber());
+		SerialNumber serialNumber = null;
+		if(devtype == 0){
+			serialNumber=serialNumberDao.findBySerialNumber(user.getSerialnumber());
+			if(serialNumber==null){		
+				return "注册失败，手表序列号没有激活";
+			}
+			else if(userDao.findBySerialNumber(user.getSerialnumber())!=null){			
+				return "注册失败，该手表序列号已经被注册了";
+			}
+		}
 		
-		System.out.println(serialNumber==null);
-		if(serialNumber==null){		
-			System.out.println("序列号没有激活");
-			return "序列号没有激活";
-		}else if(userDao.findBySerialNumber(user.getSerialnumber())!=null){			
-			System.out.println("该序列号已经被注册了");
-			return "该序列号已经被注册了";
-		}else if(userDao.findByName(user.getUsername())!=null){
+		Serialnumber serialnumberCheck = serialNumberDao.findBySNNumber(user.getSerialnumber());
+		if(serialnumberCheck != null){								
+			return "注册失败，此序列号已经存在";
+		}
+		
+		if(userDao.findByName(user.getUsername())!=null){
+			return "注册失败，用户名已经被注册了";
+		}
+		else if(userDao.findByPhone(user.getFmobile())!=null){
+			return "注册失败，手机号已经被注册了";
+		}
+		else {	
+			
+			userDao.Add(user);			
+		
+			if(devtype == 0){
+				serialNumber.setIsReg("1");
+				serialNumber.setFdevtype(devtype);
+				serialNumberDao.updateSerialNumber(serialNumber);
+				
+				AddToRelated(serialNumber.getFuniqueid(),user.getFuniqueid());
+			}
+			else
+			{
+				Serialnumber snWatch = new Serialnumber();				
+				String uniqueid = UUID.randomUUID().toString();
+				snWatch.setFuniqueid(uniqueid);
+				snWatch.setSerialnumber(user.getSerialnumber());
+				snWatch.setIsreg("1");
+				snWatch.setFdevtype(devtype);
+				serialNumberDao.Add(snWatch);
+				
+				AddToRelated(snWatch.getFuniqueid(),user.getFuniqueid());
+			}
+
+			
+			if(devtype == 0){			
+				BindPhone bp=bindPhoneDao.findBySeriaNumber(user.getSerialnumber());
+				if(bp==null){
+					BindPhone bp1=new BindPhone();
+					bp1.setSerialNumber(user.getSerialnumber());
+					bp1.setMasterNo("sos_num1="+user.getPhone());
+					bp1.setSos("sos_num2=,sos_num3=,sos_num4=");
+					bp1.setListenNo("listen_num=");
+					bp1.setStatus("1");
+					bindPhoneDao.addPhone(bp1);
+				}else{
+					bp.setSerialNumber(user.getSerialnumber());
+					bp.setMasterNo("sos_num1="+user.getPhone());
+					bp.setSos("sos_num2=,sos_num3=,sos_num4=");
+					bp.setListenNo("listen_num=");
+					bp.setStatus("1");
+					bindPhoneDao.updatePhone(bp);
+				}		
+			}
+			return "success";
+		}
+
+	}
+	
+	public String regOnly(UserWatch user) throws DAOException
+	{	
+		if(userDao.findByName(user.getUsername())!=null){
 			//用户已经存在了
 			System.out.println("用户名已经被注册了");
 			return "用户名已经被注册了";
 		}else if(userDao.findByPhone(user.getFmobile())!=null){
 			return "手机号已经被注册了";
 		}else {
-			//userDao.save(user);
-			//ejb save
-						
-			userDao.Add(user);
-			
-			serialNumber.setIsReg("1");
-			serialNumberDao.updateSerialNumber(serialNumber);
-			
-			AddToRelated(serialNumber.getFuniqueid(),user.getFuniqueid());
-			
-			BindPhone bp=bindPhoneDao.findBySeriaNumber(user.getSerialnumber());
-			if(bp==null){
-				BindPhone bp1=new BindPhone();
-				bp1.setSerialNumber(user.getSerialnumber());
-				bp1.setMasterNo("sos_num1="+user.getPhone());
-				bp1.setSos("sos_num2=,sos_num3=,sos_num4=");
-				bp1.setListenNo("listen_num=");
-				bp1.setStatus("1");
-				bindPhoneDao.addPhone(bp1);
-			}else{
-				bp.setSerialNumber(user.getSerialnumber());
-				bp.setMasterNo("sos_num1="+user.getPhone());
-				bp.setSos("sos_num2=,sos_num3=,sos_num4=");
-				bp.setListenNo("listen_num=");
-				bp.setStatus("1");
-				bindPhoneDao.updatePhone(bp);
-			}				
+			userDao.Add(user);									
 			return "success";
 		}
 

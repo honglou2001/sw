@@ -44,5 +44,9 @@
         <property name="online" type="java.lang.String">
             <column name="online" length="1" />
         </property>
+         <property name="fdevtype" type="java.lang.Integer" insert="false">
+             <column name="fdevtype"  />
+         </property>       
+        
     </class>
 </hibernate-mapping>

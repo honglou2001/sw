@@ -787,7 +787,6 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 			String fmusclecontent = request.getParameter("musclecontent");
 			String fwatercontent = request.getParameter("watercontent");
 			String fvisceralfatcontent = request.getParameter("visceralfatcontent");
-			String flocaldate = request.getParameter("localdate");
 			String fremark = Tools.DecodeUtf8String(request.getParameter("fremark"));
 			
 			UserWatch user =null;
@@ -819,8 +818,6 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 		    SerialnumberWeight snWeight = new SerialnumberWeight();	 
 		    snWeight.setFappcountid(usrid);
 		    snWeight.setFserialnumid(Serialnumid);
-		    snWeight.setFlocaldate(flocaldate);
-
 		    
 	        HashMap<String, String> map = new HashMap<String, String>();
 	        map.put("a.funiqueid", Serialnumid);
@@ -915,7 +912,6 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 
 			String usrid = request.getParameter("usrid");
 			String Serialnumid = request.getParameter("Serialnumid");
-			String Flocaldate = request.getParameter("localdate");
 			
 			String pagesize = request.getParameter("pagesize");
 			String pageindex = request.getParameter("pageindex");
@@ -965,8 +961,6 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 			HashMap<String, String> mapSerial = new HashMap<String, String>();
 			mapSerial.put("user.funiqueid",usrid);
 			mapSerial.put("a.funiqueid",Serialnumid);
-			
-			
 			List<Serialnumber> listSerialNumber = this.serialNumService.GetAll(0, 100, mapSerial);
 		    if(listSerialNumber==null || listSerialNumber.size()==0)
 	        {
@@ -982,8 +976,7 @@ public class SerialNumSportAction extends BaseAction implements ServletResponseA
 		    //pagesize 每次显示多少条数据；pageindex 显示第几页，0为第一页；排序为记录新增时间倒序；		    		    
 	        HashMap<String, String> map = new HashMap<String, String>();
 	        map.put("FSerialnumid", Serialnumid);
-	        map.put("FAppcountid", usrid);	 
-	        map.put("FLocalDate",Flocaldate);
+	        map.put("FAppcountid", usrid);	        	        
 			List<SerialnumberWeight>  listdbWeight= this.serialNumberSportSerivce.ListSerialnumberWeight(npIndex,npSize, map);
 			
 			json.put("state", 1);

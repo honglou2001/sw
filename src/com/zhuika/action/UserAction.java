@@ -447,6 +447,14 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 
 			String serialNumber = request.getParameter("serialNumber");
 			String userName = request.getParameter("userName");
+			String devtype = request.getParameter("devtype");
+			
+			int ndevtype=0;
+			if(devtype!=null && !devtype.equals(""))
+			{
+				ndevtype = Integer.parseInt(devtype);
+			}
+			
 
 			userName = Tools.DecodeUtf8String(userName);
 
@@ -486,7 +494,88 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			String uniqueid = UUID.randomUUID().toString();
 			user.setFuniqueid(uniqueid);
 
-			String msg = userService.reg(user);
+			String msg = userService.reg(user,ndevtype);
+			String state = "1";
+			if ("success".equals(msg)) {
+				msg = "成功注册";
+				state = "1";
+			} else {
+				state = "2";
+				uniqueid = "";
+			}
+			json.put("state", state);
+			json.put("info", msg);
+			json.put("usrid", uniqueid);
+		} catch (Exception e) {
+			json.put("state", -1);
+			json.put("info", e.getMessage());
+			json.put("usrid", "");
+		} finally {
+			out.print(json);
+			out.close();
+		}
+	}
+	
+	public void userRegOnly() {
+
+		PrintWriter out = null;
+		JSONObject json = new JSONObject();
+		try {
+			request.setCharacterEncoding("utf-8");
+			response.setContentType("text/json");
+			response.setCharacterEncoding("utf-8");
+			out = response.getWriter();
+
+			String serialNumber = request.getParameter("serialNumber");
+			String userName = request.getParameter("userName");
+			String devtype = request.getParameter("devtype");
+			
+			int ndevtype=0;
+			if(devtype!=null && !devtype.equals(""))
+			{
+				ndevtype = Integer.parseInt(devtype);
+			}
+			
+
+			userName = Tools.DecodeUtf8String(userName);
+
+			String phone = request.getParameter("phone");
+			String password = request.getParameter("password");
+			String sex = request.getParameter("sex");
+			String nickname = Tools.DecodeUtf8String(request
+					.getParameter("nickname"));
+			String birthday = request.getParameter("birthday");
+			String height = request.getParameter("height");
+			String weight = request.getParameter("weight");
+			// String picture=request.getParameter("picture");
+			String femail = request.getParameter("femail");
+			String fremark = Tools.DecodeUtf8String(request
+					.getParameter("fremark"));
+
+			Calendar cal = Calendar.getInstance();
+			Date date = cal.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String createTime = sdf.format(date);
+
+			UserWatch user = new UserWatch();
+			user.setSerialnumber(serialNumber);
+			user.setUsername(userName);
+			user.setPhone(phone);
+			user.setFmobile(phone);
+			user.setPassword(password);
+			user.setSex(sex);
+			user.setCreatetime(createTime);
+			user.setNickname(nickname);
+			user.setBirthday(birthday);
+			user.setHeight(height);
+			user.setWeight(weight);
+			user.setFemail(femail);
+			user.setFremark(fremark);
+
+			String uniqueid = UUID.randomUUID().toString();
+			user.setFuniqueid(uniqueid);
+
+			String msg = userService.regOnly(user);
 			String state = "1";
 			if ("success".equals(msg)) {
 				msg = "成功注册";
