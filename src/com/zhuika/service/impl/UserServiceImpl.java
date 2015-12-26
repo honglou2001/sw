@@ -156,11 +156,11 @@ public class UserServiceImpl implements UserService {
 			else if(userDao.findBySerialNumber(user.getSerialnumber())!=null){			
 				return "注册失败，该手表序列号已经被注册了";
 			}
-		}
-		
-		Serialnumber serialnumberCheck = serialNumberDao.findBySNNumber(user.getSerialnumber());
-		if(serialnumberCheck != null){								
-			return "注册失败，此序列号已经存在";
+		}else{		
+			Serialnumber serialnumberCheck = serialNumberDao.findBySNNumber(user.getSerialnumber());
+			if(serialnumberCheck != null){								
+				return "注册失败，此序列号已经存在";
+			}
 		}
 		
 		if(userDao.findByName(user.getUsername())!=null){
@@ -213,21 +213,6 @@ public class UserServiceImpl implements UserService {
 					bindPhoneDao.updatePhone(bp);
 				}		
 			}
-			return "success";
-		}
-
-	}
-	
-	public String regOnly(UserWatch user) throws DAOException
-	{	
-		if(userDao.findByName(user.getUsername())!=null){
-			//用户已经存在了
-			System.out.println("用户名已经被注册了");
-			return "用户名已经被注册了";
-		}else if(userDao.findByPhone(user.getFmobile())!=null){
-			return "手机号已经被注册了";
-		}else {
-			userDao.Add(user);									
 			return "success";
 		}
 

@@ -75,5 +75,6 @@
 	<classpathentry kind="lib" path="G:/Java/Jboss/jboss-4.2.3.GA/client/xmlsec.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/rest1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jpush-api"/>
+	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/mail.jar"/>
 	<classpathentry kind="output" path="WebRoot/WEB-INF/classes"/>
 </classpath>

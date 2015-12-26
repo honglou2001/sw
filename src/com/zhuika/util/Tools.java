@@ -27,6 +27,18 @@ public class Tools {
 		return strIn;
 	}
 	
+	
+	public static boolean checkIsNotEmpty(String strIn)
+	{
+		if(strIn!=null&& strIn.length() != 0)
+		{
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public static String getUrl(HttpServletRequest request)
 	{
 		HttpServletRequest httpRequest=(HttpServletRequest)request;

@@ -20,7 +20,7 @@ public interface UserService {
 	String register(User user) throws DAOException;
 	//获取用户
 	String reg(UserWatch user,int devtype) throws DAOException;
-	String regOnly(UserWatch user) throws DAOException;
+//	String regOnly(UserWatch user) throws DAOException;
 	User getUser(String serialNumber);
 	void updateUser(User user);
 	List<UserWatch> GetAll(int offset, int length,HashMap<String, String> map);

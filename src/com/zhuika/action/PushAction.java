@@ -199,6 +199,7 @@ public class PushAction  extends BaseAction implements ServletRequestAware,Servl
 			List<SerialnumberJpush> lists = this.userService.ListSerialnumberJpush(0, 100, map);
 			if(lists!=null && lists.size()==1)
 			{
+				alias = alias.replace("-", "_");
 				pushObj = lists.get(0);
 				pushObj.setFalias(alias);
 				pushObj.setFtag(tag);

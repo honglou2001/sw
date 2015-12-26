@@ -12,8 +12,7 @@
 		<action name="updatePassword" class="com.zhuika.action.UserAction" method="updatePassword"></action>
 		<action name="getUser" class="com.zhuika.action.UserAction" method="getUser"></action>
 		<action name="userUpdate" class="com.zhuika.action.UserAction" method="userUpdate"></action>	
-		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>
-		<action name="userRegOnly" class="com.zhuika.action.UserAction" method="userRegOnly"></action>													
+		<action name="doUpload" class="com.zhuika.action.UserAction" method="doUpload"></action>												
 	</package>
 	
 	<!-- 手环序列号模块 -->
@@ -52,8 +51,7 @@
 		<action name="searchStationGps" class="com.zhuika.action.LocationAction" method="searchStationGps"></action>					
 		<action name="queryLocEleChange" class="com.zhuika.action.LocEleAction" method="queryLocEleChange"></action>
 		<action name="searchLoaUsrid" class="com.zhuika.action.LocationAction" method="searchLoaUsrid"></action>	
-		<action name="searchAreaLog" class="com.zhuika.action.LocationAction" method="searchAreaLog"></action>							
-			
+		<action name="searchAreaLog" class="com.zhuika.action.LocationAction" method="searchAreaLog"></action>			
 	</package>
 	
 	<!-- 闹铃模块 -->

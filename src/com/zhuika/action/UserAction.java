@@ -45,6 +45,7 @@ import com.zhuika.service.SerialNumberService;
 import com.zhuika.service.UserService;
 import com.zhuika.util.FileWebService;
 import com.zhuika.util.Jsonconf;
+import com.zhuika.util.SendMailUtil;
 import com.zhuika.util.Tools;
 
 @Controller
@@ -304,6 +305,7 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 		}			
 	}
 
+
 	/**
 	 * 登陆,根据手机号和密码
 	 */
@@ -317,9 +319,37 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			out = response.getWriter();
 			String phone = request.getParameter("phone");
 			String password = request.getParameter("password");
+			String femail = request.getParameter("femail");
+			
+			if(!Tools.checkIsNotEmpty(phone) && !Tools.checkIsNotEmpty(femail))
+			{
+				json.put("state", 3);
+				json.put("info", "登录失败，手机号码或邮件，必须使用也只能使用其中一个的登录方式");
+				json.put("data", null);				
+				out.print(json);
+				out.close();				
+				return;
+				
+			}
+			else if(Tools.checkIsNotEmpty(phone) && Tools.checkIsNotEmpty(femail))
+			{
+				json.put("state", 3);
+				json.put("info", "登录失败，手机号码或邮件，只能使用其中一个登录方式");
+				json.put("data", null);				
+				out.print(json);
+				out.close();				
+				return;
+				
+			}
 			
 			HashMap<String, String> map = new HashMap<String, String>();
-			map.put("fmobile", phone);
+			
+			if(Tools.checkIsNotEmpty(phone)){
+				map.put("fmobile", phone);
+			}
+			else if(Tools.checkIsNotEmpty(femail)){
+				map.put("femail", femail);
+			}
 
 			List<UserWatch> listUsers = userService.GetAll(0, 1, map);
 			if(listUsers!=null && listUsers.size()>0)
@@ -353,8 +383,17 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 				
 			}else
 			{
+				String info = "不存在此手机号，登陆失败";
 				json.put("state", 3);
-				json.put("info", "不存在此手机号，登陆失败");
+				
+				if(Tools.checkIsNotEmpty(phone)){
+					
+				}
+				else if(Tools.checkIsNotEmpty(femail)){
+					info = "不存在此邮箱，登陆失败";
+				}
+		
+				json.put("info", info);
 				json.put("data", null);
 				json.put("SerialNumber", null);
 			}
@@ -449,6 +488,15 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			String userName = request.getParameter("userName");
 			String devtype = request.getParameter("devtype");
 			
+			String sex = request.getParameter("sex");
+			String nickname = Tools.DecodeUtf8String(request.getParameter("nickname"));
+			String birthday = request.getParameter("birthday");
+			String height = request.getParameter("height");
+			String weight = request.getParameter("weight");
+			// String picture=request.getParameter("picture");
+			String femail = request.getParameter("femail");
+			String fremark = Tools.DecodeUtf8String(request.getParameter("fremark"));
+			
 			int ndevtype=0;
 			if(devtype!=null && !devtype.equals(""))
 			{
@@ -460,16 +508,44 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 
 			String phone = request.getParameter("phone");
 			String password = request.getParameter("password");
-			String sex = request.getParameter("sex");
-			String nickname = Tools.DecodeUtf8String(request
-					.getParameter("nickname"));
-			String birthday = request.getParameter("birthday");
-			String height = request.getParameter("height");
-			String weight = request.getParameter("weight");
-			// String picture=request.getParameter("picture");
-			String femail = request.getParameter("femail");
-			String fremark = Tools.DecodeUtf8String(request
-					.getParameter("fremark"));
+			String lang = request.getParameter("lang");
+			
+			int language = 0;
+			if(lang!=null && !lang.equals(""))
+			{
+				language = Integer.parseInt(lang);
+			}
+			
+			if( phone ==null || password == null 			  
+			   || serialNumber ==null || userName == null 
+			   || phone.equals("") || password.equals("")
+			   || serialNumber.equals("") || userName.equals(""))
+			{								
+				json.put("state", 3);
+				json.put("info", "注册失败，手机号码、密码、序列号、用户名等不能为空");
+				json.put("data", null);				
+				out.print(json);
+				out.close();				
+				return;
+			}
+			
+			if(femail!=null && !femail.equals("")){			
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("femail", femail);
+	
+				List<UserWatch> listUsers = userService.GetAll(0, 1, map);
+				if(listUsers!=null && listUsers.size()>0)
+				{
+					json.put("state", 4);
+					json.put("info", "注册失败，此邮箱已经存在");
+					json.put("data", null);				
+					out.print(json);
+					out.close();				
+					return;
+				
+				}
+			}
+			
 
 			Calendar cal = Calendar.getInstance();
 			Date date = cal.getTime();
@@ -498,6 +574,16 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			String state = "1";
 			if ("success".equals(msg)) {
 				msg = "成功注册";
+				
+				if(femail!=null && !femail.equals("")){	
+					
+					SendMailUtil mail = new SendMailUtil(femail,femail,password,uniqueid,language,2);
+					// mail.attachfile("C:\Users\awen\Desktop\a.txt");
+					//mail.startSend("交接文档", "收到请回复");					
+					Thread th = new Thread(mail);
+					th.start();
+				}
+				
 				state = "1";
 			} else {
 				state = "2";
@@ -514,88 +600,7 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			out.print(json);
 			out.close();
 		}
-	}
-	
-	public void userRegOnly() {
-
-		PrintWriter out = null;
-		JSONObject json = new JSONObject();
-		try {
-			request.setCharacterEncoding("utf-8");
-			response.setContentType("text/json");
-			response.setCharacterEncoding("utf-8");
-			out = response.getWriter();
-
-			String serialNumber = request.getParameter("serialNumber");
-			String userName = request.getParameter("userName");
-			String devtype = request.getParameter("devtype");
-			
-			int ndevtype=0;
-			if(devtype!=null && !devtype.equals(""))
-			{
-				ndevtype = Integer.parseInt(devtype);
-			}
-			
-
-			userName = Tools.DecodeUtf8String(userName);
-
-			String phone = request.getParameter("phone");
-			String password = request.getParameter("password");
-			String sex = request.getParameter("sex");
-			String nickname = Tools.DecodeUtf8String(request
-					.getParameter("nickname"));
-			String birthday = request.getParameter("birthday");
-			String height = request.getParameter("height");
-			String weight = request.getParameter("weight");
-			// String picture=request.getParameter("picture");
-			String femail = request.getParameter("femail");
-			String fremark = Tools.DecodeUtf8String(request
-					.getParameter("fremark"));
-
-			Calendar cal = Calendar.getInstance();
-			Date date = cal.getTime();
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			String createTime = sdf.format(date);
-
-			UserWatch user = new UserWatch();
-			user.setSerialnumber(serialNumber);
-			user.setUsername(userName);
-			user.setPhone(phone);
-			user.setFmobile(phone);
-			user.setPassword(password);
-			user.setSex(sex);
-			user.setCreatetime(createTime);
-			user.setNickname(nickname);
-			user.setBirthday(birthday);
-			user.setHeight(height);
-			user.setWeight(weight);
-			user.setFemail(femail);
-			user.setFremark(fremark);
-
-			String uniqueid = UUID.randomUUID().toString();
-			user.setFuniqueid(uniqueid);
-
-			String msg = userService.regOnly(user);
-			String state = "1";
-			if ("success".equals(msg)) {
-				msg = "成功注册";
-				state = "1";
-			} else {
-				state = "2";
-				uniqueid = "";
-			}
-			json.put("state", state);
-			json.put("info", msg);
-			json.put("usrid", uniqueid);
-		} catch (Exception e) {
-			json.put("state", -1);
-			json.put("info", e.getMessage());
-			json.put("usrid", "");
-		} finally {
-			out.print(json);
-			out.close();
-		}
-	}
+	}		
 
 	/**
 	 * 注册

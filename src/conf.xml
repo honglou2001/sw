@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+	 <VALUE>  
+	     <socketip>127.0.0.1</socketip>
+	     <socketport>8075</socketport> 
+	 </VALUE>
+	 <VALUE>  
+	     <mailhost>smtp.sohu.com</mailhost>
+	     <mailusername>sihand</mailusername>
+	     <mailpassword>801125</mailpassword>
+	     <mailfrom>sihand@sohu.com</mailfrom>	     	     
+	     <mailfromname>\u5F20\u6167\u5065</mailfromname>    
+	 </VALUE>	 
+ </CONFIG>  
+ 
