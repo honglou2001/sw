@@ -523,7 +523,9 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			{								
 				json.put("state", 3);
 				json.put("info", "注册失败，手机号码、密码、序列号、用户名等不能为空");
-				json.put("data", null);				
+				json.put("usrid", "");
+				json.put("userInfo", null);
+				json.put("serialnumberInfo", null);			
 				out.print(json);
 				out.close();				
 				return;
@@ -538,7 +540,9 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 				{
 					json.put("state", 4);
 					json.put("info", "注册失败，此邮箱已经存在");
-					json.put("data", null);				
+					json.put("usrid", "");
+					json.put("userInfo", null);
+					json.put("serialnumberInfo", null);			
 					out.print(json);
 					out.close();				
 					return;
@@ -569,7 +573,10 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 
 			String uniqueid = UUID.randomUUID().toString();
 			user.setFuniqueid(uniqueid);
-
+			
+			UserWatch userReg =null;
+			Serialnumber serialnumberReg = null;
+			
 			String msg = userService.reg(user,ndevtype);
 			String state = "1";
 			if ("success".equals(msg)) {
@@ -578,13 +585,17 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 				if(femail!=null && !femail.equals("")){	
 					
 					SendMailUtil mail = new SendMailUtil(femail,femail,password,uniqueid,language,2);
-					// mail.attachfile("C:\Users\awen\Desktop\a.txt");
+					//mail.attachfile("C:\Users\awen\Desktop\a.txt");
 					//mail.startSend("交接文档", "收到请回复");					
 					Thread th = new Thread(mail);
 					th.start();
 				}
 				
 				state = "1";
+												
+				userReg =  userService.Find(uniqueid);
+				serialnumberReg = serialNumService.findBySNNumber(serialNumber);
+				
 			} else {
 				state = "2";
 				uniqueid = "";
@@ -592,10 +603,22 @@ public class UserAction extends BaseAction implements ServletResponseAware,
 			json.put("state", state);
 			json.put("info", msg);
 			json.put("usrid", uniqueid);
+			
+			
+			JsonConfig  jconfig = Jsonconf.getUserJsonConf(request);				
+			jconfig.setExcludes(new String[] { "phone", "id" ,"furl"});
+			json.put("userInfo", JSONObject.fromObject(userReg, jconfig));
+			
+		    jconfig = Jsonconf.getSerialnumJsonConf(request);
+			jconfig.setExcludes(new String[] { "id" });
+			json.put("serialnumberInfo", JSONObject.fromObject(serialnumberReg, jconfig));
+						
 		} catch (Exception e) {
 			json.put("state", -1);
 			json.put("info", e.getMessage());
 			json.put("usrid", "");
+			json.put("userInfo", null);
+			json.put("serialnumberInfo", null);
 		} finally {
 			out.print(json);
 			out.close();

@@ -47,6 +47,7 @@ public class SendMailUtil implements Runnable{
 	private int ftype = 0;
 	private String userid = "";
 	private String templateid = "";
+	private String title = "";
 	
 	// 用于保存发送附件的文件路径名的集合
 	private Vector<String> fileList = new Vector<String>();
@@ -196,6 +197,7 @@ public class SendMailUtil implements Runnable{
 		if(listTem!=null && listTem.size()>0)
 		{
 			this.templateid =  listTem.get(0).getFtemplateid();
+			this.title = listTem.get(0).getFtitle();
 			content = listTem.get(0).getFcontent();
 			content = content.replace("{0}", this.regemail);
 			content = content.replace("{1}", this.regpwd);
@@ -233,22 +235,36 @@ public class SendMailUtil implements Runnable{
 		
 	}
 
-	@Override
-	public void run() {
-				
+	private String getTitle()
+	{
+		if (this.title!=null && this.title.length()>0)
+		{
+			return this.title;
+			
+		}
 		String title = "Hello, 欢迎注册Chase App";
 		if(this.language == 1)
 		{
 			title = "Hello, Welcome to register Chase App";
 		}
+		
+		
+		return title;
+	}
+	@Override
+	public void run() {
+				
+	
 					
-		String content = this.getTemplate();		
+		String content = this.getTemplate();	
+		String title = this.getTitle();
+		
 				
 		// TODO Auto-generated method stub
 		this.startSend(title, content);
 		
 		this.saveRecord(content, title);
 
-		logger.info(String.format("邮件发送完成,To:%s;regemail:%s;From:%s",this.to,this.regemail,this.from));
+		logger.info(String.format("邮件发送完成,Title:%s,To:%s;regemail:%s;From:%s",title,this.to,this.regemail,this.from));
 	}
 }

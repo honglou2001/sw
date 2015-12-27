@@ -23,7 +23,7 @@ public class XMLReader {
 	 * @return
 	 */
 	public static Config loadconfig() {
-		if (config == null)
+		//if (config == null)
 			config = getconfig();
 		return config;
 	}

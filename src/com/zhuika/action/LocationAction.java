@@ -73,9 +73,11 @@ public class LocationAction extends BaseAction implements ServletRequestAware,
 
 		HashMap<String, String> queryMap = new HashMap<String, String>();
 
+		
 		queryMap.put("serialNumber", serialNumber);
 		queryMap.put("startTime", startTime);
 		queryMap.put("endTime", endTime);
+		queryMap.put("frecordcount", "frecordcount=1");
 
 		listLocElectfences = locelect.GetAllData(0, 1000, queryMap);
 
