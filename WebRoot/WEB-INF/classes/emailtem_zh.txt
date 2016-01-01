@@ -1,0 +1,15 @@
+<span style="white-space:normal;">尊敬的用户，您好：</span><br style="white-space:normal;" />
+<p style="white-space:normal;">
+	&nbsp; &nbsp; 祝贺您成功注册Chase App.
+</p>
+<p style="white-space:normal;">
+	&nbsp; &nbsp; 您的账户：{0} &nbsp; &nbsp;密码：{1}
+</p>
+<p style="white-space:normal;">
+	<br />
+</p>
+<span style="white-space:normal;">&nbsp; &nbsp; 登录您的Chase帐号，您可以收到如下信息：</span><br style="white-space:normal;" />
+<span style="white-space:normal;">&nbsp; &nbsp; &nbsp; 1）同步手环上的运动数据</span><br style="white-space:normal;" />
+<span style="white-space:normal;">&nbsp; &nbsp; &nbsp;&nbsp;2）App升级提醒</span><br style="white-space:normal;" />
+<br style="white-space:normal;" />
+<span style="white-space:normal;">&nbsp; &nbsp; 正确的使用Chase App可以帮助你保持健康与活力！</span><br />

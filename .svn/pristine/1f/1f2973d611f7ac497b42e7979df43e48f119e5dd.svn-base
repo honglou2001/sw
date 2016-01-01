@@ -1,9 +1,0 @@
-package com.zhuika.service;
-
-import com.zhuika.entity.BindPhone;
-
-public interface FamilyNoService {
-	public BindPhone getBindPhone(String serialNumber);
-	public void updateBindPhone(BindPhone bindPhone);
-	public void saveBindPhone(BindPhone bindPhone);
-}

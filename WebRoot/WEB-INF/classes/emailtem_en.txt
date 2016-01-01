@@ -1,0 +1,24 @@
+<p>
+	Hello,dear users，&nbsp;
+</p>
+<p>
+	&nbsp; &nbsp; Congratulations, you have registered an account for your Chase App.&nbsp;
+</p>
+<p>
+	&nbsp; &nbsp;&nbsp;Your account:{0}                   Password:{1}&nbsp;
+</p>
+<p>
+	&nbsp; &nbsp; Login this account, you will receive:&nbsp;
+</p>
+<p>
+	&nbsp; &nbsp; &nbsp; 1) The exercise data from wristband.&nbsp;
+</p>
+<p>
+	&nbsp; &nbsp; &nbsp;&nbsp;2) The App update suggestion.&nbsp;
+</p>
+<p>
+	<br />
+</p>
+<p>
+	&nbsp; &nbsp; Operate Chase app and wristband correctly will help you keep healthy and energetic.
+</p>
