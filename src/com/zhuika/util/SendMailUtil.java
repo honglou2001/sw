@@ -25,11 +25,14 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.device.ejb.SerialnumberEmailsmtp;
 import com.watch.ejb.SerialnumberEmailhistory;
 import com.watch.ejb.SerialnumberEmailtemplate;
 import com.zhuika.dao.impl.SerialnumberEmailhistoryDaoIml;
 import com.zhuika.dao.impl.SerialnumberEmailtemplateDaoIml;
 import com.zhuika.entity.Config;
+
+import com.zhuika.dao.impl.SerialnumberEmailsmtpDaoIml;
 
 public class SendMailUtil implements Runnable{
     
@@ -63,16 +66,35 @@ public class SendMailUtil implements Runnable{
 		this.regpwd = regpwd;
 		this.userid = userid;
 		this.language = lang;
-		// 初始化发件人、收件人、主题等
-		Config xmlConfig = XMLReader.loadconfig();
 		
-		
-		this.from = xmlConfig.mailfrom;//from;
-		this.password = xmlConfig.mailpassword;//password;
-		this.host = xmlConfig.mailhost;//smtpServer;
+		boolean hasSmtp = this.getSmtp();		
+		if(!hasSmtp){
+			// 初始化发件人、收件人、主题等
+			Config xmlConfig = XMLReader.loadconfig();						
+			this.from = xmlConfig.mailfrom;//from;
+			this.password = xmlConfig.mailpassword;//password;
+			this.host = xmlConfig.mailhost;//smtpServer;
+		}
 		this.ftype = type;
 	}
 
+	private boolean getSmtp()
+	{
+		SerialnumberEmailsmtpDaoIml  serialnumberemailsmtpDao = new SerialnumberEmailsmtpDaoIml();
+		HashMap<String, String> map = new HashMap<String, String>(); 
+		map.put("FIsDefault","1");		 
+		List<SerialnumberEmailsmtp>  listSerialnumberEmailsmtp= serialnumberemailsmtpDao.ListSerialnumberEmailsmtp(0, 1,map);
+		if(listSerialnumberEmailsmtp!=null && listSerialnumberEmailsmtp.size()>0)
+		{
+			SerialnumberEmailsmtp smtp = listSerialnumberEmailsmtp.get(0);
+			this.from = smtp.getFmailaddress();
+			this.host = smtp.getFmailhost();
+			this.password = smtp.getFmailpassword();
+			return true;
+			
+		}		
+		return false;				
+	}
 	/*
 	 * 
 	 * 该方法用于收集附件名
